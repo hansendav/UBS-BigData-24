@@ -1,4 +1,4 @@
-from pyspark import SparkContext 
+from pyspark.sql import SparkSession  
 
 spark = SparkSession.builder\
         .master("local")\
