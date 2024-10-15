@@ -5,16 +5,25 @@ spark = SparkSession.builder\
         .appName("big_earth_net_to_dataframe")\
         .getOrCreate() 
 
-df = spark.read.format("binaryFile")\
-    .load("s3://ubs-datasets/bigearthnet/BigEarthNet-S2/")
+df_s1 = spark.read.format("binaryFile")\
+    .load("s3://ubs-datasets/bigearthnet/BigEarthNet-S2/BigEarthNet-S1/*.tif")
+
+df_s2 = spark.read.format("binaryFile")\
+    .load("s3://ubs-datasets/bigearthnet/BigEarthNet-S2/BigEarthNet-S2/*.tif")
+
+df_ref_maps = spark.read.format("binaryFile")\
+    .load("s3://ubs-datasets/bigearthnet/BigEarthNet-S2/Reference_Maps/*.tif")
 
 
-print("Schema of the dataframe:")
-df.printSchema()
+dfs = [df_s1, df_s2, df_ref_maps]
+shapes = []
 
-print("Show the dataframe:")
-df.show() 
+for df in dfs:
+    print("Schema of the dataframe:")
+    df.printSchema()
+    print("Adding the shape of the dataframe to the list")
+    rows, columns = df.count(), len(df.columns)
+    shapes.append((rows, columns))
 
-print("Dataframe shape") 
-print(f"Number of rows: {df.count()}")
-print(f"Number of columns: {len(df.columns)}")
+print("Shapes of the dataframes:")
+print(shapes)
