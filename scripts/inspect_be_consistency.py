@@ -5,21 +5,22 @@ spark = SparkSession.builder\
         .appName("read_parquet_file_bigearth")\
         .getOrCreate()
 
-df_s1 = spark.read.format("binaryFile")\
-    .option("recursiveFileLookup")\
+df_s1 = spark.read\
+    .format("binaryFile")\
+    .option("recursiveFileLookup", "true")\
     .option("pathGlobFilter", "*.tif")\
     .load("s3://ubs-datasets/bigearthnet/BigEarthNet-S1/")\
     .select("path")
 
 df_s2 = spark.read.format("binaryFile")\
-    .option("recursiveFileLookup")\
+    .option("recursiveFileLookup", "true")\
     .option("pathGlobFilter", "*.tif")\
     .load("s3://ubs-datasets/bigearthnet/BigEarthNet-S2/")\
     .select("path")
 
 
 df_ref_maps = spark.read.format("binaryFile")\
-    .option("recursiveFileLookup")\
+    .option("recursiveFileLookup", "true")\
     .option("pathGlobFilter", "*.tif")\
     .load("s3://ubs-datasets/bigearthnet/Reference_Maps/")\
     .select("path")
