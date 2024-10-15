@@ -6,13 +6,13 @@ spark = SparkSession.builder\
         .getOrCreate() 
 
 df_s1 = spark.read.format("binaryFile")\
-    .load("s3://ubs-datasets/bigearthnet/BigEarthNet-S2/BigEarthNet-S1/*.tif")
+    .load("s3://ubs-datasets/bigearthnet/BigEarthNet-S2/BigEarthNet-S1/")
 
 df_s2 = spark.read.format("binaryFile")\
-    .load("s3://ubs-datasets/bigearthnet/BigEarthNet-S2/BigEarthNet-S2/*.tif")
+    .load("s3://ubs-datasets/bigearthnet/BigEarthNet-S2/BigEarthNet-S2/")
 
 df_ref_maps = spark.read.format("binaryFile")\
-    .load("s3://ubs-datasets/bigearthnet/BigEarthNet-S2/Reference_Maps/*.tif")
+    .load("s3://ubs-datasets/bigearthnet/BigEarthNet-S2/Reference_Maps/")
 
 
 dfs = [df_s1, df_s2, df_ref_maps]
