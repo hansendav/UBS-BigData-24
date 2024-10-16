@@ -8,6 +8,7 @@ s3 = fs.S3FileSystem()
 
 # paths to parquet and directories
 parquet_path = "s3://ubs-datasets/bigearthnet/metadata.parquet"
+
 s1_path = "BigEarthNet-S1"
 s2_path = "BigEarthNet-S2"
 ref_maps_paths = "Reference_Maps"
