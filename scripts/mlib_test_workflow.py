@@ -32,7 +32,7 @@ def print_start_finish(whatstarted_message):
     return decorator
 
 
-@log_runtime
+@log_runtime('CO2-regression-model')
 def main():
 # Set up session
     spark = SparkSession.builder\
@@ -94,4 +94,3 @@ def main():
     print(f"Spark session stopped")
 
 if __name__ == "__main__":
-    main()
