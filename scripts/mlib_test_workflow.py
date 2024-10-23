@@ -17,9 +17,8 @@ def print_start_finish(whatstarted_message):
 
 # Set up session
 spark = SparkSession.builder\
-        #.master("yarn")\
-        .appName("CO2-regression-model")\
-        .getOrCreate()
+    .appName("CO2-regression-model")\
+    .getOrCreate()
 
 # Load the data
 path_to_file = 's3://ubs-datasets/CO2/CO2_Emissions_Canada.csv'
