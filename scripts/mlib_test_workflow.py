@@ -92,3 +92,6 @@ def main():
 
     spark.stop()
     print(f"Spark session stopped")
+
+if __name__ == __main__:
+    main()
