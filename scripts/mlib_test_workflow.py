@@ -7,7 +7,7 @@ from pyspark.ml.evaluation import RegressionEvaluator
 
 def print_start_finish(whatstarted_message):
     def decorator(func):
-        def wrapper(*args. **kwargs):
+        def wrapper(*args, **kwargs):
             print(f"{whatstarted_message} started")
             result = func(*args, **kwargs)
             print(f"{whatstarted_message} finished")
@@ -17,7 +17,7 @@ def print_start_finish(whatstarted_message):
 
 # Set up session
 spark = SparkSession.builder\
-        .master("yarn")\
+        #.master("yarn")\
         .appName("CO2-regression-model")\
         .getOrCreate()
 
