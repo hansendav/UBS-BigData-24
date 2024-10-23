@@ -1,29 +1,31 @@
+import pyarrow as pa
 import pyarrow.fs as fs
 import pyarrow.parquet as pq
 import pandas as pd
+import re 
 
 # Set up S3 
 s3 = fs.S3FileSystem()
 
-"""
+bigearthnet_bucket = "s3://ubs-datasets/bigearthnet/"
+
+
 # Read parquet file to pandas df
 parquet_path = "s3://ubs-datasets/bigearthnet/metadata.parquet"
 meta = pq.read_table(parquet_path).to_pandas()
-"""
 
-s1_path = "BigEarthNet-S1/"
-s2_path = "BigEarthNet-S2/"
-ref_maps_paths = "Reference_Maps/"
+meta['patch_id_path'] = meta['patch_id'].apply(lambda x: re.match(r'(.*)_[0-9]+_[0-9]+$', x).group(1))
+meta['patch_id_path_s1'] = meta['s1_name'].apply(lambda x: re.match(r'(.*)_[A-Z0-9]+_[0-9]+_[0-9]+$', x).group(1))
 
-def extract_filenames(filesystem, s3_bucket, s3_path):
-        selector = fs.FileSelector(f"{s3_bucket}/{s3_path}", recursive=True)
-        file_info = filesystem.get_file_info(selector)
-        file_names = [info.path.split('/')[-1].split('.')[0] for info in file_info if info.is_file]
-        return file_names
+meta['s1_path'] = bigearthnet_bucket + 'BigEarthNet-S1/'  + meta['patch_id_path_s1'] + '/' + meta['s1_name'] + '/'
+meta['s2_path'] = bigearthnet_bucket + 'BigEarthNet-S2/'  + meta['patch_id_path'] + '/' + meta['patch_id'] +  '/' 
+meta['label_path'] = bigearthnet_bucket + 'Reference_Maps/' + meta['patch_id_path'] + '/' + meta['patch_id'] + '/'
 
-s1_files = extract_filenames(s3, "ubs-datasets/bigearthnet", s1_path)
-s2_files = extract_filenames(s3, "ubs-datasets/bigearthnet", s2_path)
-ref_files = extract_filenames(s3, "ubs-datasets/bigearthnet", ref_maps_paths)
+# Write to S3 
+table = pa.Table.from_pandas(meta)
+pq.write_table(table, 'ubs-cde/home/e2405193/bigdata/meta_with_image_paths.parquet', filesystem=s3)
 
-print(s1_files[:5])
-"""
+print(
+        f"Saved updated meta.parquet to:"
+        f"\n s3://ubs-cde/home/e2405193/bigdata/meta_with_image_paths.parquet"
+)

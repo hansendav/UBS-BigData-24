@@ -14,7 +14,7 @@ s2_path = "BigEarthNet-S2"
 ref_maps_paths = "Reference_Maps"
 
 def extract_filenames(fs, s3_bucket, s3_path):
-        selector = fs.FileSelector(f"{s3_bucket}/{s3_path}", recursive=True)
+        selector = fs.FileSelector(f"{s3_bucket}/{s3_path}/", recursive=True)
         file_info = fs.get_file_info(selector)
         return [info.path.split('/')[-1].split('.')[0] for info in file_info if info.is_file]
 
