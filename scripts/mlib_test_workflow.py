@@ -94,3 +94,4 @@ def main():
     print(f"Spark session stopped")
 
 if __name__ == "__main__":
+    main()
