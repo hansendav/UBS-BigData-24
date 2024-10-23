@@ -11,16 +11,22 @@ import time
 def log_runtime(task_name):
     def decorator(func):
         def wrapper(*args, **kwargs):
-            start_time = time.localtime()
-            start_time_formated = time.strftime("%H:%M:%S". start_time)
+            start_time = time.time()
+            start_time_formatted = time.strftime("%H:%M:%S", time.localtime(start_time))
             print(f"{task_name} started at {start_time_formated}")
+            
             result = func(*args, **kwargs)
-            end_time = time.localtime()
-            end_time_formated = time.strftime("%H:%M:%S". end_time)
-            print(f"{task_name} finished at {end_time_formated}")
+            
+            end_time = time.time()
+            end_time_formatted = time.strftime("%H:%M:%S", time.localtime(end_time))
+            print(f"{task_name} finished at {end_time_formatted}")
+            
             runtime = end_time - start_time
-            runtime_formated = time.strftime("%H:%M:%S", runtime)
-            print(f"Runtime task {task_name}: {runtime_formated}")
+            hours, rem = divmod(runtime, 3600)
+            minutes, seconds = divmod(rem, 60)
+            runtime_formatted = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
+            print(f"Runtime of task {task_name}: {runtime_formatted}")
+            
             return result 
         return wrapper
     return  decorator
