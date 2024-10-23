@@ -13,7 +13,7 @@ def log_runtime(task_name):
         def wrapper(*args, **kwargs):
             start_time = time.time()
             start_time_formatted = time.strftime("%H:%M:%S", time.localtime(start_time))
-            print(f"{task_name} started at {start_time_formated}")
+            print(f"{task_name} started at {start_time_formatted}")
             
             result = func(*args, **kwargs)
             
