@@ -177,7 +177,7 @@ def explode_to_pixel_df(meta_df):
 # -----------------------------------------------------------------------------
 # ### Define main 
 # -----------------------------------------------------------------------------
-def main(session_name):
+def main(session_name, meta_limit):
     spark = SparkSession.builder\
         .appName(session_name)\
         .getOrCreate()
@@ -186,7 +186,7 @@ def main(session_name):
     # Read metadata 
     meta = spark.read.parquet('s3://ubs-cde/home/e2405193/bigdata/meta_with_image_paths.parquet')
     
-    meta = meta.limit(5)
+    meta = meta.limit(meta_limit)
     
     # Add column that holds as array all paths to the respective images for each patch 
     meta = prepare_cu_metadata(meta)
@@ -208,8 +208,9 @@ def main(session_name):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Spark session name')
     parser.add_argument('--session_name', type=str, required=True, help='Name of the Spark session')
+    parser.add_argument('--meta_limit', type=int, required=True, help='Limit the number of images to process')
     args = parser.parse_args()
 
-    main(args.session_name)
+    main(args.session_name, args.meta_limit)
 # -----------------------------------------------------------------------------
 # ### End of script
