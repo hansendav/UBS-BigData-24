@@ -213,11 +213,13 @@ def main(session_name, meta_limit):
     df_pixels.show(2)
     df_pixels.printSchema()
 
-    """
+    
     # Train, Validation, Test splits    
     train = df_pixels.filter(df_pixels.split == 'train')
     val = df_pixels.filter(df_pixels.split == 'val')
     test = df_pixels.filter(df_pixels.split == 'test')
+
+    # Add feature engineering here before assembling all into features column
 
     # Feature selection and assembling 
     feature_cols = [col for col in df_pixels.columns if col not in ['split', 'label', 'patch_id']]
@@ -236,7 +238,6 @@ def main(session_name, meta_limit):
     accuracy = evaluator.evaluate(preds)
 
     print(f"Training set accuracy: {accuracy}")
-    """
 
 
 
