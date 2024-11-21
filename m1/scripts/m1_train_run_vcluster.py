@@ -26,7 +26,7 @@ def get_band_paths(patch_path, is_s2=False):
     Example: Input: path to S2 directory holding all band tifs 
     Output: list of paths to all bands
     """
-    if is_s2:
+    if is_s2 == True:
         files_info = filesystem.get_file_info(fs.FileSelector(patch_path, recursive=True))
         file_paths = ['s3://' + file.path for file in files_info if file.is_file and re.search(r'_B(0[2348]).tif$', file.path)]
     
