@@ -141,20 +141,34 @@ def explode_to_pixel_df(meta_df):
                 'pixel_arrays.split']
 
     df_pixels_arrays = meta_df.select(to_select)
-    explode_df = df_pixels_arrays.select(f.posexplode(col('VV')).alias('pos', 'VV'))\
-        .join(df_pixels_arrays.select(f.posexplode(col('VH')).alias('pos', 'VH')), 'pos')\
-        .join(df_pixels_arrays.select(f.posexplode(col('B')).alias('pos', 'B')), 'pos')\
-        .join(df_pixels_arrays.select(f.posexplode(col('G')).alias('pos', 'G')), 'pos')\
-        .join(df_pixels_arrays.select(f.posexplode(col('R')).alias('pos', 'R')), 'pos')\
-        .join(df_pixels_arrays.select(f.posexplode(col('NIR')).alias('pos', 'NIR')), 'pos')\
-        .join(df_pixels_arrays.select(f.posexplode(col('label')).alias('pos', 'label')), 'pos')\
-        .join(df_pixels_arrays.select(f.posexplode(col('patch_id')).alias('pos', 'patch_id')), 'pos')\
-        .join(df_pixels_arrays.select(f.posexplode(col('split')).alias('pos', 'split')), 'pos')\
-        .drop('pos')
+    df_pixels_arrays = df_pixels_arrays.withColumn("zipped", f.arrays_zip(
+        col('pixel_arrays.VV'),
+        col('pixel_arrays.VH'),
+        col('pixel_arrays.B'),
+        col('pixel_arrays.G'),
+        col('pixel_arrays.R'),
+        col('pixel_arrays.NIR'),
+        col('pixel_arrays.label'),
+        col('pixel_arrays.patch_id'),
+        col('pixel_arrays.split')
+    ))
 
+    # Explode zipped arrays to ensure that each pixels is a row 
+    # exactly once
+    explode_df = df_pixels_arrays.select(f.explode(col('zipped')).alias('zipped'))\
+        .select(
+            col('zipped.VV').alias('VV'),
+            col('zipped.VH').alias('VH'),
+            col('zipped.B').alias('B'),
+            col('zipped.G').alias('G'),
+            col('zipped.R').alias('R'),
+            col('zipped.NIR').alias('NIR'),
+            col('zipped.label').alias('label'),
+            col('zipped.patch_id').alias('patch_id'),
+            col('zipped.split').alias('split')
+        )
 
     return explode_df
-    
 
 
 # -----------------------------------------------------------------------------
