@@ -26,6 +26,9 @@ def get_band_paths(patch_path, is_s2=False):
     Example: Input: path to S2 directory holding all band tifs 
     Output: list of paths to all bands
     """
+
+    filesystem = fs.S3FileSystem()
+
     if is_s2 == True:
         files_info = filesystem.get_file_info(fs.FileSelector(patch_path, recursive=True))
         file_paths = ['s3://' + file.path for file in files_info if file.is_file and re.search(r'_B(0[2348]).tif$', file.path)]
@@ -62,9 +65,9 @@ def create_pixel_arrays(patch_path_array):
 
     s1_path, s2_path, label_path, patch_id, split = get_paths_from_meta(patch_path_array)
 
-    s2_band_paths = get_band_paths(s3, s2_path, is_s2=True)
-    s1_band_paths = get_band_paths(s3, s1_path)
-    label_band_paths = get_band_paths(s3, label_path)
+    s2_band_paths = get_band_paths(s2_path, is_s2=True)
+    s1_band_paths = get_band_paths(s1_path)
+    label_band_paths = get_band_paths(label_path)
     
     image_bands_s2 = read_bands(s2_band_paths)
     image_bands_s1 = read_bands(s1_band_paths)
