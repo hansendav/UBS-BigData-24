@@ -203,7 +203,7 @@ def main(session_name, meta_limit):
     label_dict = spark.read.csv('s3://ubs-cde/home/e2405193/bigdata/label_encoding.csv', header=True)
 
     # Adapt label names based on custom dictionary 
-    df_pixels = df_image.join(label_dict, df_pixels.label == label_dict.ID, 'inner')\
+    df_pixels = df_pixels.join(label_dict, df_pixels.label == label_dict.ID, 'inner')\
         .drop('label')\
         .drop('DESC')\
         .withColumnRenamed('ID_NEW', 'label')
@@ -214,7 +214,7 @@ def main(session_name, meta_limit):
     test = df_pixels.filter(df_pixels.split == 'test')
 
     # Feature selection and assembling 
-    feature_cols = [col for col in df_image.columns if col not in ['split', 'label', 'patch_id']]
+    feature_cols = [col for col in df_pixels.columns if col not in ['split', 'label', 'patch_id']]
     feature_assembler = VectorAssembler(inputCols=feature_cols, outputCol="features")
 
     # Random Forest Classifier
@@ -223,9 +223,9 @@ def main(session_name, meta_limit):
     # Pipeline setup    
     pipeline = Pipeline(stages=[feature_assembler, rf])
 
-    rf_model = pipeline.fit(df_image)
+    rf_model = pipeline.fit(train)
 
-    preds_train = rf_model.transform(df_image)
+    preds_train = rf_model.transform(train)
     evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
     accuracy = evaluator.evaluate(preds)
 
