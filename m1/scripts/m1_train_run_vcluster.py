@@ -129,6 +129,30 @@ schema = StructType([
 
 create_pixel_arrays_udf = udf(create_pixel_arrays, schema)
 
+def explode_to_pixel_df(meta_df): 
+    to_select = ['pixel_arrays.VV',
+                'pixel_arrays.VH',
+                'pixel_arrays.B',
+                'pixel_arrays.G',
+                'pixel_arrays.R',
+                'pixel_arrays.NIR',
+                'pixel_arrays.label',
+                'pixel_arrays.patch_id',
+                'pixel_arrays.split']
+
+    df_pixels_arrays = meta_df.select(to_select)
+    explode_df = df_pixels_arrays.select(f.posexplode(col('VV')).alias('pos', 'VV'))\
+        .join(df_pixels_arrays.select(f.posexplode(col('VH')).alias('pos', 'VH')), 'pos')\
+        .join(df_pixels_arrays.select(f.posexplode(col('B')).alias('pos', 'B')), 'pos')\
+        .join(df_pixels_arrays.select(f.posexplode(col('G')).alias('pos', 'G')), 'pos')\
+        .join(df_pixels_arrays.select(f.posexplode(col('R')).alias('pos', 'R')), 'pos')\
+        .join(df_pixels_arrays.select(f.posexplode(col('NIR')).alias('pos', 'NIR')), 'pos')\
+        .join(df_pixels_arrays.select(f.posexplode(col('label')).alias('pos', 'label')), 'pos')\
+        .join(df_pixels_arrays.select(f.posexplode(col('patch_id')).alias('pos', 'patch_id')), 'pos')\
+        .join(df_pixels_arrays.select(f.posexplode(col('split')).alias('pos', 'split')), 'pos')\
+        .drop('pos')
+    
+
 
 # -----------------------------------------------------------------------------
 # ### Define main 
@@ -141,13 +165,24 @@ def main(session_name):
 
     # Read metadata 
     meta = spark.read.parquet('s3://ubs-cde/home/e2405193/bigdata/meta_with_image_paths.parquet')
+    
+    meta = meta.limit(5)
+    
     # Add column that holds as array all paths to the respective images for each patch 
     meta = prepare_cu_metadata(meta)
+    
+    # Apply UDF to create pixel arrays for each patch
     meta = meta.withColumn('pixel_arrays', create_pixel_arrays_udf('paths_array'))
+    
+    # Explode arrays to create pixel dataframe for training 
+    df_pixels = explode_to_pixel_df(meta)
 
-    meta.show(1)
-    meta.printSchema()
-
+    print('Dataframe with pixel arrays created')
+    print('Row count of pixel dataframe:', df_pixels.count())
+    print('Schema of pixel dataframe:')
+    df_pixels.printSchema()
+    
+    spark.stop()
 
 # -----------------------------------------------------------------------------
 # ### Run main
