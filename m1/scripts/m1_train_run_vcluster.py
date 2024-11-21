@@ -139,8 +139,11 @@ def explode_to_pixel_df(meta_df):
                 'pixel_arrays.label',
                 'pixel_arrays.patch_id',
                 'pixel_arrays.split']
+            
 
     df_pixels_arrays = meta_df.select(to_select)
+
+    df_pixels_array.printSchema()
     df_pixels_arrays = df_pixels_arrays.withColumn("zipped", f.arrays_zip(
         col('pixel_arrays.VV'),
         col('pixel_arrays.VH'),
