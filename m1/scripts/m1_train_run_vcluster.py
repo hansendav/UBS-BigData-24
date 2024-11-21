@@ -7,13 +7,14 @@ from pyspark.sql import functions as f
 import rasterio 
 import re 
 import numpy as np
-import pyspark.pandas as ps 
+#import pyspark.pandas as ps 
 
 # MLIB 
 from pyspark.ml import Pipeline
 from pyspark.ml.classification import RandomForestClassifier
 from pyspark.ml.evaluation import MulticlassClassificationEvaluator
 from pyspark.ml.feature import VectorAssembler
+import argparse
 
 # -----------------------------------------------------------------------------
 # ### Define functions
@@ -130,12 +131,15 @@ def main(session_name):
     meta.printSchema()
 
 
+# -----------------------------------------------------------------------------
+# ### Run main
+# -----------------------------------------------------------------------------
+if __name__ == '__main__':
+    main()
+    parser = argparse.ArgumentParser(description='Spark session name')
+    parser.add_argument('--session_name', type=string, required=True, help='Name of the Spark session')
+    args = parser.parse_args()
 
-
-
-
-
-
-
-
-
+    main(args.session_name)
+# -----------------------------------------------------------------------------
+# ### End of script
