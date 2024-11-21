@@ -206,6 +206,7 @@ def main(session_name, meta_limit):
     df_pixels = df_pixels.join(label_dict, df_pixels.label == label_dict.ID, 'inner')\
         .drop('label')\
         .drop('DESC')\
+        .drop('ID')\
         .withColumnRenamed('ID_NEW', 'label')
 
     # Train, Validation, Test splits    
