@@ -197,8 +197,46 @@ def main(session_name, meta_limit):
     # Explode arrays to create pixel dataframe for training 
     df_pixels = explode_to_pixel_df(meta)
 
-    df_pixels.printSchema()
-    print(df_pixels.count())
+    ## MODEL TRAINING AND EVALUATION
+    
+    # Import label dictionary 
+    label_dict = spark.read.csv('s3://ubs-cde/home/e2405193/bigdata/label_encoding.csv', header=True)
+
+    # Adapt label names based on custom dictionary 
+    df_pixels = df_image.join(label_dict, df_pixels.label == label_dict.ID, 'inner')\
+        .drop('label')\
+        .drop('DESC')\
+        .withColumnRenamed('ID_NEW', 'label')
+
+    # Train, Validation, Test splits    
+    train = df_pixels.filter(df_pixels.split == 'train')
+    val = df_pixels.filter(df_pixels.split == 'val')
+    test = df_pixels.filter(df_pixels.split == 'test')
+
+    # Feature selection and assembling 
+    feature_cols = [col for col in df_image.columns if col not in ['split', 'label', 'patch_id']]
+    feature_assembler = VectorAssembler(inputCols=feature_cols, outputCol="features")
+
+    # Random Forest Classifier
+    rf = RandomForestClassifier(labelCol="label", featuresCol="features")
+
+    # Pipeline setup    
+    pipeline = Pipeline(stages=[feature_assembler, rf])
+
+    rf_model = pipeline.fit(df_image)
+
+    preds_train = rf_model.transform(df_image)
+    evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
+    accuracy = evaluator.evaluate(preds)
+
+    print(f"Training set accuracy: {accuracy}")
+
+
+
+
+
+
+
 
     spark.stop()
 
