@@ -19,6 +19,24 @@ import argparse
 # -----------------------------------------------------------------------------
 # ### Define functions
 # ----------------------------------------------------------------------------- 
+def prepare_cu_metadata(metadata):
+    metadata = metadata \
+    .withColumn('s1_path', f.split(f.col('s1_path'), 's3://').getItem(1)) \
+    .withColumn('s2_path', f.split(f.col('s2_path'), 's3://').getItem(1)) \
+    .withColumn('label_path', f.split(f.col('label_path'), 's3://').getItem(1)) \
+    .withColumn(
+        'patch_path_array',
+        f.array(
+            f.col('s1_path'),
+            f.col('s2_path'),
+            f.col('label_path'),
+            f.col('patch_id'),
+            f.col('split')
+        )
+    )
+
+    return metadata
+
 def get_band_paths(patch_path, is_s2=False):
     """
     Extracts image band paths from a given directory path. 
@@ -27,6 +45,7 @@ def get_band_paths(patch_path, is_s2=False):
     Output: list of paths to all bands
     """
 
+    # Uses pyarrow here to get list of files in the S3 directories
     filesystem = fs.S3FileSystem()
 
     if is_s2 == True:
@@ -123,11 +142,7 @@ def main(session_name):
     # Read metadata 
     meta = spark.read.parquet('s3://ubs-cde/home/e2405193/bigdata/meta_with_image_paths.parquet')
     # Add column that holds as array all paths to the respective images for each patch 
-    meta = meta.withColumn('paths_array', f.array(f.col('s1_path'),
-                                   f.col('s2_path'),
-                                   f.col('label_path'),
-                                   f.col('patch_id'),
-                                   f.col('split')))
+    meta = prepare_cu_metadata(meta)
     meta = meta.withColumn('pixel_arrays', create_pixel_arrays_udf('paths_array'))
 
     meta.show(1)
