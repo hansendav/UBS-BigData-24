@@ -123,16 +123,7 @@ def create_image_dataframe(spark, s3, meta_path_row):
         .withColumn('RSum', col('VV') + col('VH'))\
         .withColumn('RVI', 4 *col('VH') / (col('VH') + col('VV')))
 
-    return df_spark
-
-create_image_dataframe_udf = udf(create_image_dataframe)
-
-
-def save_dataframe(dataframe, output_dir):
-    file_path = f"{output_dir}/{path1}_{path2}_{path3}.parquet"
-    df.write.parquet(file_path)
-    return file_path
-
+    dataframes.append(df_spark)
 
 def main():
     spark = SparkSession.builder\
@@ -146,7 +137,7 @@ def main():
     s3 = fs.S3FileSystem()
 
     meta = pq.read_table('s3://ubs-cde/home/e2405193/bigdata/meta_with_image_paths.parquet').to_pandas()
-    meta = meta.iloc[:1]
+    meta = meta.iloc[:5]
     meta = spark.createDataFrame(meta)
 
     # Specify the path to your CSV file in S3
@@ -175,6 +166,20 @@ def main():
         )
     )
 
+    rows = meta.select(col('patch_path_array')).collect()
+    value = rows[0]['patch_path_array']
+    print(value)
+    print(type(value))
+
+    path = value[0]
+    path2 = value[1]
+
+    print(path)
+    print(path2)
+
+    """
+
+
     paths = meta.select(f.explode(meta.patch_path_array).alias('path'))
 
     s1_path, s2_path, label_path, patch_id, split= get_paths_from_meta(paths)
@@ -188,7 +193,7 @@ def main():
     image_label = read_bands(label_band_paths)[0]
 
     print(image_label)
-
+    """
     """
     df_image = create_image_dataframe(spark, s3, paths)
 
@@ -196,6 +201,7 @@ def main():
         .drop('label')\
         .drop('DESC')\
         .withColumnRenamed('ID_NEW', 'label')
+
 
 
     feature_cols = [col for col in df_image.columns if col not in ['split', 'label', 'patch_id']]
