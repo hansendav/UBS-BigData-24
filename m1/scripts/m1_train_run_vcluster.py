@@ -207,7 +207,7 @@ def main(session_name, meta_limit):
         .drop('label')\
         .drop('DESC')\
         .drop('ID')\
-        .withColumnRenamed('ID_NEW', 'label')
+        .withColumnRenamed('ID_NEW', 'label')\
         .withColumn('label', f.col('label').cast('long'))
 
     df_pixels.show(2)
