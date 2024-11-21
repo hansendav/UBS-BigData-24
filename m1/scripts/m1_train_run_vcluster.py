@@ -177,11 +177,9 @@ def main(session_name):
     # Explode arrays to create pixel dataframe for training 
     df_pixels = explode_to_pixel_df(meta)
 
-    print('Dataframe with pixel arrays created')
-    print('Row count of pixel dataframe:', df_pixels.count())
-    print('Schema of pixel dataframe:')
+    df_pixels.show(1)
     df_pixels.printSchema()
-    
+
     spark.stop()
 
 # -----------------------------------------------------------------------------
