@@ -25,7 +25,7 @@ def prepare_cu_metadata(metadata):
     .withColumn('s2_path', f.split(f.col('s2_path'), 's3://').getItem(1)) \
     .withColumn('label_path', f.split(f.col('label_path'), 's3://').getItem(1)) \
     .withColumn(
-        'patch_path_array',
+        'paths_array',
         f.array(
             f.col('s1_path'),
             f.col('s2_path'),
