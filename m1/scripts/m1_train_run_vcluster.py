@@ -145,15 +145,15 @@ def explode_to_pixel_df(meta_df):
 
     df_pixels_arrays.printSchema()
     df_pixels_arrays = df_pixels_arrays.withColumn("zipped", f.arrays_zip(
-        col('pixel_arrays.VV'),
-        col('pixel_arrays.VH'),
-        col('pixel_arrays.B'),
-        col('pixel_arrays.G'),
-        col('pixel_arrays.R'),
-        col('pixel_arrays.NIR'),
-        col('pixel_arrays.label'),
-        col('pixel_arrays.patch_id'),
-        col('pixel_arrays.split')
+        col('VV'),
+        col('VH'),
+        col('B'),
+        col('G'),
+        col('R'),
+        col('NIR'),
+        col('label'),
+        col('patch_id'),
+        col('split')
     ))
 
     # Explode zipped arrays to ensure that each pixels is a row 
