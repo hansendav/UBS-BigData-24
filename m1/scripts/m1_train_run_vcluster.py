@@ -19,7 +19,7 @@ from pyspark.sql import functions as f
 import rasterio 
 import re 
 import numpy as np
-import pyspark.pandas as ps 
+#import pyspark.pandas as ps 
 
 # MLIB 
 from pyspark.ml import Pipeline
