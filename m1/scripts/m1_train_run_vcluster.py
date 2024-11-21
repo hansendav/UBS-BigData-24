@@ -208,6 +208,7 @@ def main(session_name, meta_limit):
         .drop('DESC')\
         .drop('ID')\
         .withColumnRenamed('ID_NEW', 'label')
+        .withColumn('label', f.col('label').cast('long'))
 
     df_pixels.show(2)
     df_pixels.printSchema()
