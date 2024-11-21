@@ -181,7 +181,7 @@ def main(session_name):
     df_pixels = explode_to_pixel_df(meta)
 
     df_pixels.printSchema()
-    df_pixels.count()
+    print(df_pixels.count())
 
     spark.stop()
 
