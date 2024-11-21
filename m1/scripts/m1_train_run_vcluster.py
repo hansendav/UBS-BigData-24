@@ -151,6 +151,9 @@ def explode_to_pixel_df(meta_df):
         .join(df_pixels_arrays.select(f.posexplode(col('patch_id')).alias('pos', 'patch_id')), 'pos')\
         .join(df_pixels_arrays.select(f.posexplode(col('split')).alias('pos', 'split')), 'pos')\
         .drop('pos')
+
+
+    return explode_df
     
 
 
@@ -177,8 +180,8 @@ def main(session_name):
     # Explode arrays to create pixel dataframe for training 
     df_pixels = explode_to_pixel_df(meta)
 
-    df_pixels.show(1)
     df_pixels.printSchema()
+    df_pixels.count()
 
     spark.stop()
 
