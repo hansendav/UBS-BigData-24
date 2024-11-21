@@ -209,6 +209,10 @@ def main(session_name, meta_limit):
         .drop('ID')\
         .withColumnRenamed('ID_NEW', 'label')
 
+    df_pixels.show(2)
+    df_pixels.printSchema()
+
+    """
     # Train, Validation, Test splits    
     train = df_pixels.filter(df_pixels.split == 'train')
     val = df_pixels.filter(df_pixels.split == 'val')
@@ -231,7 +235,7 @@ def main(session_name, meta_limit):
     accuracy = evaluator.evaluate(preds)
 
     print(f"Training set accuracy: {accuracy}")
-
+    """
 
 
 
