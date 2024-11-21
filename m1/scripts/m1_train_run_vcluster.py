@@ -135,9 +135,8 @@ def main(session_name):
 # ### Run main
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
-    main()
     parser = argparse.ArgumentParser(description='Spark session name')
-    parser.add_argument('--session_name', type=string, required=True, help='Name of the Spark session')
+    parser.add_argument('--session_name', type=str, required=True, help='Name of the Spark session')
     args = parser.parse_args()
 
     main(args.session_name)
