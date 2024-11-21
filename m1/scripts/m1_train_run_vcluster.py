@@ -16,9 +16,6 @@ from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, LongType, DoubleType, StringType
 from pyspark.sql.functions import col, udf
 from pyspark.sql import functions as f
-import pyarrow.parquet as pq
-import pyarrow.fs as fs
-import pyarrow.csv as csv
 import rasterio 
 import re 
 import numpy as np
@@ -146,6 +143,8 @@ def main():
     # Read metadata.parquet file from S3
     meta = spark.read.parquet('ubs-cde/home/e2405193/bigdata/meta_with_image_paths.parquet')
     meta.show(1)
+
+    label_dict = spark.read.csv('ubs-cde/home/e2405193/bigdata/label_encoding.csv', header=True)
 
     
     """
