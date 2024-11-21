@@ -132,13 +132,9 @@ def save_dataframe(dataframe, output_dir):
 
 def main():
     spark = SparkSession.builder\
-        .appName("Test")\
-        .master("local[*]")\
-        .config("spark.eventLog.dir", "./log/") \
+        .appName("Test AWS/EMR adaptation")\
         .getOrCreate()
     
-    spark.conf.set("spark.sql.execution.arrow.pyspark.enabled", "true")
-
     # Read metadata.parquet file from S3
     meta = spark.read.parquet('ubs-cde/home/e2405193/bigdata/meta_with_image_paths.parquet')
     meta.show(1)
