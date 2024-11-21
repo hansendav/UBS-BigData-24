@@ -136,10 +136,12 @@ def main():
         .getOrCreate()
     
     # Read metadata.parquet file from S3
-    meta = spark.read.parquet('s3//ubs-cde/home/e2405193/bigdata/meta_with_image_paths.parquet')
-    meta.show(1)
-
     label_dict = spark.read.csv('s3://ubs-cde/home/e2405193/bigdata/label_encoding.csv', header=True)
+    label_dict.show(5)
+    #meta = spark.read.parquet('s3://ubs-cde/home/e2405193/bigdata/meta_with_image_paths.parquet')
+    #meta.show(1)
+
+    
 
     
     """
