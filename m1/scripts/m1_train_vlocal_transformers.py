@@ -256,7 +256,7 @@ def main(session_name, meta_limit):
 
     ## MODEL TRAINING AND EVALUATION
     
-
+    """
     # Feature engineering and transformation
     print(train_meta.count())
     # Test intermediate outputs
@@ -289,9 +289,8 @@ def main(session_name, meta_limit):
     features_output = feature_assembler.transform(label_output)
     print("After feature_assembler:")
     features_output.show(1)
-
-
     """
+
     # Random Forest Classifier
     rf = RandomForestClassifier(labelCol="label", featuresCol="features")
 
@@ -303,7 +302,6 @@ def main(session_name, meta_limit):
     feature_assembler,
     rf])
 
-
     rf_model = pipeline.fit(train)
     
     preds_train = rf_model.transform(train)
@@ -311,8 +309,6 @@ def main(session_name, meta_limit):
     accuracy = evaluator.evaluate(preds)
 
     print(f"Training set accuracy: {accuracy}")
-    """
-
 
     spark.stop()
 
