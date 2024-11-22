@@ -166,20 +166,7 @@ def main():
         )
     )
 
-    rows = meta.select(col('patch_path_array')).collect()
-    value = rows[0]['patch_path_array']
-    print(value)
-    print(type(value))
-
-    path = value[0]
-    path2 = value[1]
-
-    print(path)
-    print(path2)
-
-    """
-
-
+    
     paths = meta.select(f.explode(meta.patch_path_array).alias('path'))
 
     s1_path, s2_path, label_path, patch_id, split= get_paths_from_meta(paths)
@@ -193,7 +180,7 @@ def main():
     image_label = read_bands(label_band_paths)[0]
 
     print(image_label)
-    """
+
     """
     df_image = create_image_dataframe(spark, s3, paths)
 

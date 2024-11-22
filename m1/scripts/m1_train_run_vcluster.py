@@ -143,7 +143,7 @@ def explode_to_pixel_df(meta_df):
 
     df_pixels_arrays = meta_df.select(to_select)
 
-    df_pixels_arrays.printSchema()
+    df_pixels_arrays.printSchema() 
     df_pixels_arrays = df_pixels_arrays.withColumn("zipped", f.arrays_zip(
         col('VV'),
         col('VH'),
@@ -190,6 +190,12 @@ def main(session_name, meta_limit):
     
     # Add column that holds as array all paths to the respective images for each patch 
     meta = prepare_cu_metadata(meta)
+
+    # Split into train, test, validation 
+    train_meta = meta.filter(meta.split == 'train') 
+    val_meta = meta.filter(meta.split == 'val')
+    test_meta = meta.filter(meta.split == 'test')
+
     
     # Apply UDF to create pixel arrays for each patch
     meta = meta.withColumn('pixel_arrays', create_pixel_arrays_udf('paths_array'))
@@ -214,6 +220,7 @@ def main(session_name, meta_limit):
     df_pixels.printSchema()
 
     
+    # 
     # Train, Validation, Test splits    
     train = df_pixels.filter(df_pixels.split == 'train')
     val = df_pixels.filter(df_pixels.split == 'val')
