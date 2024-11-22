@@ -15,7 +15,7 @@ from pyspark.ml.classification import RandomForestClassifier
 from pyspark.ml.evaluation import MulticlassClassificationEvaluator
 from pyspark.ml.feature import VectorAssembler
 from pyspark.ml import Transformer
-from pyspsark.ml.param.shared import HasInputCols, HasOutputCols
+from pyspark.ml.param.shared import HasInputCols, HasOutputCols
 
 # -----------------------------------------------------------------------------
 # ### Define functions
