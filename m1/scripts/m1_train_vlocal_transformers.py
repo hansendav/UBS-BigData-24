@@ -147,7 +147,7 @@ class explode_pixel_arrays_into_df(Transformer):
     def __init__(self):
         super(explode_pixel_arrays_into_df, self).__init__()
     
-    def explode_to_pixel_df(df): 
+    def explode_to_pixel_df(self, df): 
         to_select = ['pixel_arrays.VV',
                     'pixel_arrays.VH',
                     'pixel_arrays.B',
@@ -185,7 +185,7 @@ class explode_pixel_arrays_into_df(Transformer):
 
         return explode_df
 
-        def _transform(self, df):
+        def _transform(self, df: DataFrame) --> DataFrame:
             explode_df = self.explode_to_pixel_df(df)
             return explode_df
 
