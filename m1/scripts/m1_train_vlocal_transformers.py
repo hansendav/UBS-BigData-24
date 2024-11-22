@@ -274,9 +274,9 @@ def main(session_name, meta_limit):
     feature_assembler,
     rf])
 
-    rf_model = pipeline.fit(train)
+    rf_model = pipeline.fit(train_meta)
     
-    preds_train = rf_model.transform(train)
+    preds_train = rf_model.transform(train_meta)
     evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
     accuracy = evaluator.evaluate(preds)
 
