@@ -178,14 +178,13 @@ class explode_pixel_arrays_into_df(Transformer):
                 col('zipped.VH').alias('VH'),
                 col('zipped.B').alias('B'),
                 col('zipped.G').alias('G'),
-                col('zipped.R').alias('R'),
                 col('zipped.NIR').alias('NIR'),
                 col('zipped.label').alias('label')
             )
 
         return explode_df
 
-        def _transform(self, df: DataFrame) --> DataFrame:
+        def _transform(self, df: DataFrame) -> DataFrame:
             explode_df = self.explode_to_pixel_df(df)
             return explode_df
 
