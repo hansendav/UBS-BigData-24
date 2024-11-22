@@ -260,21 +260,24 @@ def main(session_name, meta_limit):
 
     # Feature engineering and transformation
     pixel_extractor = extractPixels()
-    df_transformer = explode_pixel_arrays_into_df()
-    indices_transformer = create_indices()
-    label_transformer = change_label_names()
-    feature_assembler = custom_vector_assembler()
-
     # Test intermediate outputs
     # Step 1: Apply pixel_extractor
     pixel_output = pixel_extractor.transform(df)
     print("After pixel_extractor:")
     pixel_output.show(1)
 
+    df_transformer = explode_pixel_arrays_into_df()
     # Step 2: Apply df_transformer
     df_transformed_output = df_transformer.transform(pixel_output)
     print("After df_transformer:")
     df_transformed_output.show(1)
+    indices_transformer = create_indices()
+    label_transformer = change_label_names()
+    feature_assembler = custom_vector_assembler()
+
+
+    
+
 
     # Step 3: Apply indices_transformer
     indices_output = indices_transformer.transform(df_transformed_output)
