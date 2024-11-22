@@ -256,40 +256,12 @@ def main(session_name, meta_limit):
 
     ## MODEL TRAINING AND EVALUATION
     
-    """
-    # Feature engineering and transformation
-    print(train_meta.count())
-    # Test intermediate outputs
-    # Step 1: Apply pixel_extractor
     pixel_extractor = extractPixels()
-    pixel_output = pixel_extractor.transform(train_meta)
-    print("After pixel_extractor:")
-    pixel_output.show(1)
-
-    # Step 2: Apply df_transformer
     df_transformer = explode_pixel_arrays_into_df()
-    df_transformed_output = df_transformer.transform(pixel_output)
-    print("After df_transformer:")
-    df_transformed_output.show(1)
-
-    # Step 3: Apply indices_transformer
     indices_transformer = create_indices()
-    indices_output = indices_transformer.transform(df_transformed_output)
-    print("After indices_transformer:")
-    indices_output.show(1)
-
     label_transformer = change_label_names()
     label_transformer._set_spark(spark)
-    label_output = label_transformer.transform(indices_output)
-    print("After label_transformer:")
-    label_output.show(1)
-    
-    # Step 5: Apply feature_assembler
     feature_assembler = custom_vector_assembler()
-    features_output = feature_assembler.transform(label_output)
-    print("After feature_assembler:")
-    features_output.show(1)
-    """
 
     # Random Forest Classifier
     rf = RandomForestClassifier(labelCol="label", featuresCol="features")
