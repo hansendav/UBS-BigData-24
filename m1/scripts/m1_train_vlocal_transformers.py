@@ -86,7 +86,7 @@ class extractPixels(Transformer):
             return band
 
     def read_bands(self, band_paths):
-        bands = [read_band(band_path) for band_path in band_paths]
+        bands = [self.read_band(band_path) for band_path in band_paths]
         bands = [band.flatten() for band in bands]
         return bands
 
