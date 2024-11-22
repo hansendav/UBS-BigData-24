@@ -145,7 +145,7 @@ class extractPixels(Transformer):
 
 class explode_pixel_arrays_into_df(Transformer):
     def __init__(self):
-        super(extractPixels, self).__init__()
+        super(explode_pixel_arrays_into_df, self).__init__()
     
     def explode_to_pixel_df(df): 
         to_select = ['pixel_arrays.VV',
