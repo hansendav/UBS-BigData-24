@@ -60,7 +60,7 @@ class extractPixels(Transformer):
             StructField('label', ArrayType(LongType()), True)
         ])
 
-    def get_band_paths(patch_path, is_s2=False):
+    def get_band_paths(self, patch_path, is_s2=False):
         """
         Extracts image band paths from a given directory path. 
         ---
@@ -80,17 +80,17 @@ class extractPixels(Transformer):
         
         return file_paths
 
-    def read_band(band_path): 
+    def read_band(self, band_path): 
             with rasterio.open(band_path) as src:
                 band = src.read()
             return band
 
-    def read_bands(band_paths):
+    def read_bands(self, band_paths):
         bands = [read_band(band_path) for band_path in band_paths]
         bands = [band.flatten() for band in bands]
         return bands
 
-    def get_paths_from_meta(patch_path_array):
+    def get_paths_from_meta(self, patch_path_array):
         rows = patch_path_array
         s1_path = rows[0]
         s2_path = rows[1]
@@ -101,17 +101,17 @@ class extractPixels(Transformer):
         return s1_path, s2_path, label_path, patch_id, split
 
 
-    def create_pixel_arrays(patch_path_array):
+    def create_pixel_arrays(self, patch_path_array):
 
-        s1_path, s2_path, label_path, patch_id, split = get_paths_from_meta(patch_path_array)
+        s1_path, s2_path, label_path, patch_id, split = self.get_paths_from_meta(patch_path_array)
 
-        s2_band_paths = get_band_paths(s2_path, is_s2=True)
-        s1_band_paths = get_band_paths(s1_path)
-        label_band_paths = get_band_paths(label_path)
+        s2_band_paths = self.get_band_paths(s2_path, is_s2=True)
+        s1_band_paths = self.get_band_paths(s1_path)
+        label_band_paths = self.get_band_paths(label_path)
         
-        image_bands_s2 = read_bands(s2_band_paths)
-        image_bands_s1 = read_bands(s1_band_paths)
-        image_label = read_bands(label_band_paths)[0]
+        image_bands_s2 = self.read_bands(s2_band_paths)
+        image_bands_s1 = self.read_bands(s1_band_paths)
+        image_label = self.read_bands(label_band_paths)[0]
 
         #patch_id_array = np.repeat(patch_id, len(image_label.flatten()))
         #split_array = np.repeat(split, len(image_label.flatten()))
@@ -133,7 +133,7 @@ class extractPixels(Transformer):
 
     def _transform(self, df):
         # set create_pixel_arrays as a UDF 
-        create_pixel_arrays = udf(self.create_pixel_arrays, self.schema)
+        create_pixel_arrays = udf(self.create_pixel_arrays, self.schema_pixelarray)
 
         # Apply transformation to input df  
         df = df.withColumn('pixel_arrays', create_pixel_arrays('paths_array'))
@@ -186,9 +186,8 @@ class explode_pixel_arrays_into_df(Transformer):
         return explode_df
 
         def _transform(self, df):
-            explode_df = udf(self.explode_to_pixel_df)
-
-            return explode_df(df)
+            explode_df = self.explode_to_pixel_df(df)
+            return explode_df
 
 class create_indices(Transformer):
     def __init__(self):
@@ -209,9 +208,9 @@ class create_indices(Transformer):
 
 class change_label_names(Transformer):
     def __init__(self):
-        super(change_label_names, self).__init__()
-        self.dict = spark.read.csv('s3://ubs-cde/home/e2405193/bigdata/label_encoding.csv', header=True)
-
+        super(change_label_names, self).__init__()    
+        def set_spark(self, spark):
+            self.dict = spark.read.csv('s3://ubs-cde/home/e2405193/bigdata/label_encoding.csv', header=True)
     def _transform(self, df):
         df = df.join(self.dict, df.label == self.ID, 'inner')\
         .drop('label')\
@@ -279,7 +278,8 @@ def main(session_name, meta_limit):
     print("After indices_transformer:")
     indices_output.show(1)
 
-    # Step 4: Apply label_transformer
+    label_transformer.set_spark(spark)
+    label_output = label_transformer.transform(indices_output)
     label_transformer = change_label_names()
     label_output = label_transformer.transform(indices_output)
     print("After label_transformer:")
