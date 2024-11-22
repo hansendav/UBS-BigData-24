@@ -208,7 +208,7 @@ class create_indices(Transformer):
 class change_label_names(Transformer):
     def __init__(self):
         super(change_label_names, self).__init__()    
-        def set_spark(self, spark):
+    def _set_spark(self, spark):
             self.dict = spark.read.csv('s3://ubs-cde/home/e2405193/bigdata/label_encoding.csv', header=True)
     def _transform(self, df):
         df = df.join(self.dict, df.label == self.ID, 'inner')\
@@ -257,7 +257,7 @@ def main(session_name, meta_limit):
     
 
     # Feature engineering and transformation
-    
+    print(train_meta.count())
     # Test intermediate outputs
     # Step 1: Apply pixel_extractor
     pixel_extractor = extractPixels()
@@ -277,9 +277,8 @@ def main(session_name, meta_limit):
     print("After indices_transformer:")
     indices_output.show(1)
 
-    label_transformer.set_spark(spark)
-    label_output = label_transformer.transform(indices_output)
     label_transformer = change_label_names()
+    label_transformer._set_spark(spark)
     label_output = label_transformer.transform(indices_output)
     print("After label_transformer:")
     label_output.show(1)
@@ -290,14 +289,6 @@ def main(session_name, meta_limit):
     print("After feature_assembler:")
     features_output.show(1)
 
-    
-
-
-    
-
-  
-
-   
 
     """
     # Random Forest Classifier
