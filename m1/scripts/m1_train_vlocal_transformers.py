@@ -190,7 +190,7 @@ class explode_pixel_arrays_into_df(Transformer):
 
             return explode_df(df)
 
-class create_indices(Tansformer):
+class create_indices(Transformer):
     def __init__(self):
         super(create_indices, self).__init__()
     
