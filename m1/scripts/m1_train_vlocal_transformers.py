@@ -184,7 +184,7 @@ class explode_pixel_arrays_into_df(Transformer):
 
         return explode_df
 
-    def _transform(self, df: DataFrame) -> DataFrame:
+    def _transform(self, df):
         explode_df = self.explode_to_pixel_df(df)
         return explode_df
 
