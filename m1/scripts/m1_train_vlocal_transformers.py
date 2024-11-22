@@ -137,6 +137,7 @@ class extractPixels(Transformer):
 
         # Apply transformation to input df  
         df = df.withColumn('pixel_arrays', create_pixel_arrays('paths_array'))
+        df = df.select('pixel_arrays')
 
         return df 
 
@@ -227,7 +228,7 @@ class custom_vector_assembler(Transformer):
     def _transform(self, df):
         feature_cols = [col for col in df.columns if col != 'label']
         feature_assembler = VectorAssembler(inputCols=feature_cols, outputCol="features")
-        return feature_assembler.transform(df)
+        return feature_assembler.transform(df).select('features', 'label')
 # -----------------------------------------------------------------------------
 # ### Define main 
 # -----------------------------------------------------------------------------
