@@ -159,7 +159,6 @@ class explode_pixel_arrays_into_df(Transformer):
         
         df_pixels_arrays = df.select(to_select)
 
-        df_pixels_arrays.printSchema() 
         df_pixels_arrays = df_pixels_arrays.withColumn("zipped", f.arrays_zip(
             col('VV'),
             col('VH'),
@@ -178,6 +177,7 @@ class explode_pixel_arrays_into_df(Transformer):
                 col('zipped.VH').alias('VH'),
                 col('zipped.B').alias('B'),
                 col('zipped.G').alias('G'),
+                col('zipped.R').alias('R'),
                 col('zipped.NIR').alias('NIR'),
                 col('zipped.label').alias('label')
             )
