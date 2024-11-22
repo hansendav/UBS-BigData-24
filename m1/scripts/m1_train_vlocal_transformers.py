@@ -184,9 +184,9 @@ class explode_pixel_arrays_into_df(Transformer):
 
         return explode_df
 
-        def _transform(self, df: DataFrame) -> DataFrame:
-            explode_df = self.explode_to_pixel_df(df)
-            return explode_df
+    def _transform(self, df: DataFrame) -> DataFrame:
+        explode_df = self.explode_to_pixel_df(df)
+        return explode_df
 
 class create_indices(Transformer):
     def __init__(self):
