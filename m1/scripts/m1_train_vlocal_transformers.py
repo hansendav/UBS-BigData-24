@@ -211,7 +211,7 @@ class change_label_names(Transformer):
     def _set_spark(self, spark):
             self.dict = spark.read.csv('s3://ubs-cde/home/e2405193/bigdata/label_encoding.csv', header=True)
     def _transform(self, df):
-        df = df.join(self.dict, df.label == self.ID, 'inner')\
+        df = df.join(self.dict, df.label == self.dict.ID, 'inner')\
         .drop('label')\
         .drop('DESC')\
         .drop('ID')\
