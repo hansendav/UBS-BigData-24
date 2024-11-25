@@ -162,7 +162,9 @@ def explode_to_pixel_df(meta_df):
 def main(session_name, meta_limit):
     spark = SparkSession.builder\
         .appName(session_name)\
+        .conf.set("spark.sql.execution.arrow.pyspark.enabled", "true")\
         .getOrCreate()
+
     print(f'Spark session created: {session_name}')
 
     meta_schema = StructType([
@@ -179,7 +181,7 @@ def main(session_name, meta_limit):
     fractions = {"train": 0.1, "test": 0.1, "val": 0.1}
 
     meta = meta.sampleBy("split", fractions, seed=42)
-
+    meta = meta.repartition(3, split)
     # Add column that holds as array all paths to the respective images for each patch 
     meta = prepare_cu_metadata(meta)
 
@@ -237,12 +239,6 @@ def main(session_name, meta_limit):
     accuracy = evaluator.evaluate(preds)
 
     print(f"Training set accuracy: {accuracy}")
-
-
-
-
-
-
 
     spark.stop()
 
