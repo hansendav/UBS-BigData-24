@@ -30,8 +30,6 @@ def prepare_cu_metadata(metadata):
             f.col('s1_path'),
             f.col('s2_path'),
             f.col('label_path'),
-            f.col('patch_id'),
-            f.col('split')
         )
     )
 
@@ -82,7 +80,7 @@ def get_paths_from_meta(patch_path_array):
 def create_pixel_arrays(patch_path_array):
     s3 = fs.S3FileSystem()
 
-    s1_path, s2_path, label_path, patch_id, split = get_paths_from_meta(patch_path_array)
+    s1_path, s2_path, label_path = get_paths_from_meta(patch_path_array)
 
     s2_band_paths = get_band_paths(s2_path, is_s2=True)
     s1_band_paths = get_band_paths(s1_path)
@@ -92,26 +90,19 @@ def create_pixel_arrays(patch_path_array):
     image_bands_s1 = read_bands(s1_band_paths)
     image_label = read_bands(label_band_paths)[0]
 
-    patch_id_array = np.repeat(patch_id, len(image_label.flatten()))
-    split_array = np.repeat(split, len(image_label.flatten()))
-
     row = Row('VH',
               'VV',
               'B',
               'G',
               'R',
               'NIR',
-              'label_p',
-              'patch_id',
-              'split')(image_bands_s1[0].tolist(),
+              'label_p')(image_bands_s1[0].tolist(),
                           image_bands_s1[1].tolist(),
                           image_bands_s2[0].tolist(),
                           image_bands_s2[1].tolist(),
                           image_bands_s2[2].tolist(),
                           image_bands_s2[3].tolist(),
-                          image_label.flatten().tolist(),
-                          patch_id_array.tolist(),
-                          split_array.tolist())
+                          image_label.flatten().tolist())
     return row
 
 # make UDF 
@@ -122,9 +113,7 @@ schema = StructType([
     StructField('G', ArrayType(LongType()), True),
     StructField('R', ArrayType(LongType()), True),
     StructField('NIR', ArrayType(LongType()), True),
-    StructField('label', ArrayType(LongType()), True),
-    StructField('patch_id', ArrayType(StringType()), True),
-    StructField('split', ArrayType(StringType()), True)
+    StructField('label', ArrayType(LongType()), True)
 ])
 
 create_pixel_arrays_udf = udf(create_pixel_arrays, schema)
@@ -136,9 +125,7 @@ def explode_to_pixel_df(meta_df):
                 'pixel_arrays.G',
                 'pixel_arrays.R',
                 'pixel_arrays.NIR',
-                'pixel_arrays.label',
-                'pixel_arrays.patch_id',
-                'pixel_arrays.split']
+                'pixel_arrays.label']
             
 
     df_pixels_arrays = meta_df.select(to_select)
@@ -151,10 +138,7 @@ def explode_to_pixel_df(meta_df):
         col('G'),
         col('R'),
         col('NIR'),
-        col('label'),
-        col('patch_id'),
-        col('split')
-    ))
+        col('label')))
 
     # Explode zipped arrays to ensure that each pixels is a row 
     # exactly once
@@ -166,9 +150,7 @@ def explode_to_pixel_df(meta_df):
             col('zipped.G').alias('G'),
             col('zipped.R').alias('R'),
             col('zipped.NIR').alias('NIR'),
-            col('zipped.label').alias('label'),
-            col('zipped.patch_id').alias('patch_id'),
-            col('zipped.split').alias('split')
+            col('zipped.label').alias('label')
         )
 
     return explode_df
