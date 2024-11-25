@@ -165,11 +165,21 @@ def main(session_name, meta_limit):
         .getOrCreate()
     print(f'Spark session created: {session_name}')
 
+    meta_schema = StructType([
+        StructField('split', StringType(), True),
+        StructField('s1_path', StringType(), True),
+        StructField('s2_path', StringType(), True),
+        StructField('label_path', StringType(), True)
+    ])
+
     # Read metadata 
-    meta = spark.read.parquet('s3://ubs-cde/home/e2405193/bigdata/meta_with_image_paths.parquet')
+    meta = spark.read.schema(meta_schema).parquet('s3://ubs-cde/home/e2405193/bigdata/meta_with_image_paths.parquet')
     
-    meta = meta.limit(meta_limit)
-    
+    # Subsample dataset for gradually increasing the size of the dataset
+    fractions = {"train": 0.1, "test": 0.1, "val": 0.1}
+
+    meta = meta.sampleBy("split", fractions, seed=42)
+
     # Add column that holds as array all paths to the respective images for each patch 
     meta = prepare_cu_metadata(meta)
 
