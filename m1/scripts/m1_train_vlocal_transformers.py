@@ -259,6 +259,8 @@ def main(session_name, subsample):
     val_meta = meta.filter(meta.split == 'validation')
     test_meta = meta.filter(meta.split == 'test')
 
+    test_img = train_meta.take(1)
+
     ## MODEL TRAINING AND EVALUATION
     
     pixel_extractor = extractPixels()
@@ -279,9 +281,9 @@ def main(session_name, subsample):
     feature_assembler])
     #rf])
 
-    rf_model = pipeline.fit(train_meta)
+    rf_model = pipeline.fit(test_img)
     
-    outputs = rf_model.transform(train_meta)
+    outputs = rf_model.transform(test_img)
     print(outputs.show(1))
 
     #preds_train = rf_model.transform(train_meta)
