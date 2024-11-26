@@ -259,10 +259,7 @@ def main(session_name, subsample):
     val_meta = meta.filter(meta.split == 'validation')
     test_meta = meta.filter(meta.split == 'test')
 
-    test_img = train_meta.head(3)
-    print(type(test_img))
-    test_img.show() 
-    test_img.printSchema()
+    print(type(train_meta.head(1)))
     ## MODEL TRAINING AND EVALUATION
     
     pixel_extractor = extractPixels()
