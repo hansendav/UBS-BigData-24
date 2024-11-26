@@ -30,9 +30,7 @@ def prepare_cu_metadata(metadata):
         f.array(
             f.col('s1_path'),
             f.col('s2_path'),
-            f.col('label_path'),
-            f.col('patch_id'),
-            f.col('split')
+            f.col('label_path')
         )
     )
 
@@ -101,7 +99,7 @@ class extractPixels(Transformer):
 
     def create_pixel_arrays(self, patch_path_array):
 
-        s1_path, s2_path, label_path, patch_id, split = self.get_paths_from_meta(patch_path_array)
+        s1_path, s2_path, label_path = self.get_paths_from_meta(patch_path_array)
 
         s2_band_paths = self.get_band_paths(s2_path, is_s2=True)
         s1_band_paths = self.get_band_paths(s1_path)
