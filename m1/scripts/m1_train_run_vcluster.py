@@ -180,8 +180,8 @@ def main(session_name, meta_limit):
     # Subsample dataset for gradually increasing the size of the dataset
     fractions = {"train": 0.1, "test": 0.1, "val": 0.1}
 
-    meta = meta.sampleBy("split", fractions, seed=42)
-    meta = meta.repartition(3, split)
+    meta = meta.sampleBy('split', fractions, seed=42)
+    meta = meta.repartition(100, 'split')
     # Add column that holds as array all paths to the respective images for each patch 
     meta = prepare_cu_metadata(meta)
 
