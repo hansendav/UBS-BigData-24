@@ -18,6 +18,43 @@ from pyspark.ml import Transformer
 from pyspark.ml.param.shared import HasInputCols, HasOutputCols
 
 # -----------------------------------------------------------------------------
+# ### Define wrapper functions 
+# -----------------------------------------------------------------------------
+
+def log_runtime(task_name):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            start_time = time.time()
+            start_time_formatted = time.strftime("%H:%M:%S", time.localtime(start_time))
+            print(f"{task_name} started at {start_time_formatted}")
+            
+            result = func(*args, **kwargs)
+            
+            end_time = time.time()
+            end_time_formatted = time.strftime("%H:%M:%S", time.localtime(end_time))
+            print(f"{task_name} finished at {end_time_formatted}")
+            
+            runtime = end_time - start_time
+            hours, rem = divmod(runtime, 3600)
+            minutes, seconds = divmod(rem, 60)
+            runtime_formatted = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
+            print(f"Runtime of task {task_name}: {runtime_formatted}")
+            
+            return result 
+        return wrapper
+    return  decorator
+
+def print_start_finish(whatstarted_message):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            print(f"{whatstarted_message} started")
+            result = func(*args, **kwargs)
+            print(f"{whatstarted_message} finished")
+            return result 
+        return wrapper 
+    return decorator
+
+# -----------------------------------------------------------------------------
 # ### Define functions
 # -----------------------------------------------------------------------------
 def prepare_cu_metadata(metadata):
@@ -58,6 +95,7 @@ class extractPixels(Transformer):
             StructField('label', ArrayType(LongType()), True)
         ])
 
+    @log_runtime('Get band paths')
     def get_band_paths(self, patch_path, is_s2=False):
         """
         Extracts image band paths from a given directory path. 
@@ -83,6 +121,7 @@ class extractPixels(Transformer):
                 band = src.read()
             return band
 
+    @get_runtime('Read all bands')
     def read_bands(self, band_paths):
         bands = [self.read_band(band_path) for band_path in band_paths]
         bands = [band.flatten() for band in bands]
@@ -126,7 +165,7 @@ class extractPixels(Transformer):
                             image_bands_s2[3].tolist(),
                             image_label.flatten().tolist())
         return row
-
+    @log_runtime('Image to pixels array')
     def _transform(self, df):
         # set create_pixel_arrays as a UDF 
         create_pixel_arrays = udf(self.create_pixel_arrays, self.schema_pixelarray)
@@ -295,14 +334,10 @@ def main(session_name, subsample):
     rf_model = pipeline.fit(train_limit)
     print('Model fitted')
 
-    preds_train = rf_model.transform(train_meta)
+    preds_train = rf_model.transform(train_meta).select('label', 'prediction')
     print('Predictions made')
-    preds_train.printSchema()
-
-    print('Model evaluation example')
-    preds_train.show(5)
     
-    evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
+    #evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
     #accuracy = evaluator.evaluate(preds_train)
 
     #print(f"Training set accuracy: {accuracy}")
