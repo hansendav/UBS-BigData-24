@@ -260,7 +260,8 @@ def main(session_name, subsample):
     test_meta = meta.filter(meta.split == 'test')
 
     test_img = train_meta.head(1)
-    print(type(test_img)
+    print(type(test_img))
+
     ## MODEL TRAINING AND EVALUATION
     """
     pixel_extractor = extractPixels()
