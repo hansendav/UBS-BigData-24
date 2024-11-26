@@ -251,22 +251,21 @@ def main(session_name, meta_limit):
     meta = meta.sampleBy('split', fractions, seed=42)
     meta = meta.repartition(100, 'split')
 
+    meta.groupBy('split').count().show()
+
+    meta.select('split').distinct().show()
    
     # Add column that holds as array all paths to the respective images for each patch 
     meta = prepare_cu_metadata(meta)
-    
-    meta.show(1)
-    meta.printSchema()
-    print(meta.count())
 
     # Split into train, test, validation 
     train_meta = meta.filter(meta.split == 'train') 
     val_meta = meta.filter(meta.split == 'val')
     test_meta = meta.filter(meta.split == 'test')
 
-    print(train_meta.count())
-    print(val_meta.count())
-    print(test_meta.count())
+    print(f'N train: {train_meta.count()}')
+    print(f'N val: {val_meta.count()}')
+    print(f'N test: {test_meta.count()}')
 
     test_meta.show(1)
     test_meta.printSchema()
