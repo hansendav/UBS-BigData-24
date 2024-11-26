@@ -259,11 +259,10 @@ def main(session_name, subsample):
     val_meta = meta.filter(meta.split == 'validation')
     test_meta = meta.filter(meta.split == 'test')
 
-    test_img = train_meta.head(1)
-    print(type(test_img))
+    test_img = train_meta.limit(1)
 
     ## MODEL TRAINING AND EVALUATION
-    """
+
     pixel_extractor = extractPixels()
     df_transformer = explode_pixel_arrays_into_df()
     indices_transformer = create_indices()
@@ -292,7 +291,7 @@ def main(session_name, subsample):
     #accuracy = evaluator.evaluate(preds)
 
     #print(f"Training set accuracy: {accuracy}")
-    """
+    
     spark.stop()
 
 # -----------------------------------------------------------------------------
