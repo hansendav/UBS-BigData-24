@@ -298,6 +298,6 @@ if __name__ == '__main__':
     parser.add_argument('--subsample', type=float, required=True, help='Limit the number of images per split to process')
     args = parser.parse_args()
 
-    main(args.session_name, args.meta_limit)
+    main(args.session_name, args.subsample)
 # -----------------------------------------------------------------------------
 # ### End of script
