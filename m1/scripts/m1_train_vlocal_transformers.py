@@ -203,7 +203,7 @@ class create_indices(Transformer):
         return df 
 
 class change_label_names(Transformer):
-    def __init__(self, dict):
+    def __init__(self):
         super(change_label_names, self).__init__()    
         def _set_dict(self, spark):
             self.dict = spark.read.csv('s3://ubs-cde/home/e2405193/bigdata/label_encoding.csv', header=True)
