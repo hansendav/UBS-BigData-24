@@ -286,6 +286,8 @@ def main(session_name, subsample):
     rf_model = pipeline.fit(train_limit)
     
     preds_train = rf_model.transform(train_meta)
+
+    preds_train.printSchema()
     evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
     accuracy = evaluator.evaluate(preds_train)
 
