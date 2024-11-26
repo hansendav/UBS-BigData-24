@@ -162,7 +162,7 @@ def explode_to_pixel_df(meta_df):
 def main(session_name, meta_limit):
     spark = SparkSession.builder\
         .appName(session_name)\
-        .config.set("spark.sql.execution.arrow.pyspark.enabled", "true")\
+        .config("spark.sql.execution.arrow.pyspark.enabled", "true")\
         .getOrCreate()
 
     print(f'Spark session created: {session_name}')
