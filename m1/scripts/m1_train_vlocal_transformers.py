@@ -281,7 +281,7 @@ def main(session_name, subsample):
 
     rf_model = pipeline.fit(train_meta)
     
-    outputs = pipeline.transform(train_meta)
+    outputs = rf_model.transform(train_meta)
     print(outputs.show(1))
 
     #preds_train = rf_model.transform(train_meta)
