@@ -121,7 +121,7 @@ class extractPixels(Transformer):
                 band = src.read()
             return band
 
-    @get_runtime('Read all bands')
+    @log_runtime('Read all bands')
     def read_bands(self, band_paths):
         bands = [self.read_band(band_path) for band_path in band_paths]
         bands = [band.flatten() for band in bands]
