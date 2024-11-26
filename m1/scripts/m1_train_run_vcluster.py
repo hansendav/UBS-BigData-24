@@ -248,7 +248,7 @@ def main(session_name, meta_limit):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Spark session name')
     parser.add_argument('--session_name', type=str, required=True, help='Name of the Spark session')
-    parser.add_argument('--meta_limit', type=int, required=True, help='Limit the number of images to process')
+    parser.add_argument('--meta_limit', type=float, required=True, help='Limit the number of images to process')
     args = parser.parse_args()
 
     main(args.session_name, args.meta_limit)
