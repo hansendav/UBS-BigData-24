@@ -8,6 +8,7 @@ import rasterio
 import re 
 import numpy as np
 import argparse
+import time
 
 # MLIB 
 from pyspark.ml import Pipeline
@@ -267,6 +268,7 @@ class custom_vector_assembler(Transformer):
 # -----------------------------------------------------------------------------
 # ### Define main 
 # -----------------------------------------------------------------------------
+@log_runtime('Main')
 def main(session_name, subsample):
     spark = SparkSession.builder\
         .appName(session_name)\
