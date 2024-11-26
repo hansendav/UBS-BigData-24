@@ -250,10 +250,15 @@ def main(session_name, meta_limit):
 
     meta = meta.sampleBy('split', fractions, seed=42)
     meta = meta.repartition(100, 'split')
-    
+
+   
     # Add column that holds as array all paths to the respective images for each patch 
     meta = prepare_cu_metadata(meta)
     
+    meta.show(1)
+    meta.printSchema()
+    print(meta.count())
+
     # Split into train, test, validation 
     train_meta = meta.filter(meta.split == 'train') 
     val_meta = meta.filter(meta.split == 'val')
