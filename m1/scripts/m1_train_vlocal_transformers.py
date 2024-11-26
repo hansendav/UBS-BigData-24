@@ -259,7 +259,7 @@ def main(session_name, subsample):
     val_meta = meta.filter(meta.split == 'validation')
     test_meta = meta.filter(meta.split == 'test')
 
-    test_img = train_meta.take(1)
+    test_img = train_meta.head(3)
 
     ## MODEL TRAINING AND EVALUATION
     
