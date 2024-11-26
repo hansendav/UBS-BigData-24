@@ -298,10 +298,11 @@ def main(session_name, subsample):
     preds_train = rf_model.transform(train_meta)
     print('Predictions made')
     preds_train.printSchema()
-    evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
-    accuracy = evaluator.evaluate(preds_train)
+    
+    #evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
+    #accuracy = evaluator.evaluate(preds_train)
 
-    print(f"Training set accuracy: {accuracy}")
+    #print(f"Training set accuracy: {accuracy}")
     
     spark.stop()
 
