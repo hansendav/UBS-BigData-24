@@ -282,11 +282,13 @@ def main(session_name, subsample):
     label_transformer,
     feature_assembler,
     rf])
+    print('Pipeline created')
 
     rf_model = pipeline.fit(train_limit)
-    
-    preds_train = rf_model.transform(train_meta)
+    print('Model fitted')
 
+    preds_train = rf_model.transform(train_meta)
+    print('Predictions made')
     preds_train.printSchema()
     evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
     accuracy = evaluator.evaluate(preds_train)
