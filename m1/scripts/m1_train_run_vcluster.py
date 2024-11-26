@@ -71,10 +71,8 @@ def get_paths_from_meta(patch_path_array):
     s1_path = rows[0]
     s2_path = rows[1]
     label_path = rows[2]
-    patch_id = rows[3]
-    split = rows[4]
 
-    return s1_path, s2_path, label_path, patch_id, split
+    return s1_path, s2_path, label_path
 
 
 def create_pixel_arrays(patch_path_array):
