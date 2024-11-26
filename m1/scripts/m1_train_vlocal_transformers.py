@@ -228,7 +228,7 @@ class custom_vector_assembler(Transformer):
 # -----------------------------------------------------------------------------
 # ### Define main 
 # -----------------------------------------------------------------------------
-def main(session_name, meta_limit):
+def main(session_name, subsample):
     spark = SparkSession.builder\
         .appName(session_name)\
         .config("spark.sql.execution.arrow.pyspark.enabled", "true")\
@@ -246,14 +246,10 @@ def main(session_name, meta_limit):
     meta = spark.read.schema(meta_schema).parquet('s3://ubs-cde/home/e2405193/bigdata/meta_with_image_paths.parquet')
     
     # Subsample dataset for gradually increasing the size of the dataset
-    fractions = {"train": 0.1, "test": 0.1, "validation": 0.1}
+    fractions = {"train": subsample, "test": subsample, "validation": subsample}
 
     meta = meta.sampleBy('split', fractions, seed=42)
     meta = meta.repartition(100, 'split')
-
-    meta.groupBy('split').count().show()
-
-    meta.select('split').distinct().show()
    
     # Add column that holds as array all paths to the respective images for each patch 
     meta = prepare_cu_metadata(meta)
@@ -263,22 +259,8 @@ def main(session_name, meta_limit):
     val_meta = meta.filter(meta.split == 'validation')
     test_meta = meta.filter(meta.split == 'test')
 
-    print(f'N train: {train_meta.count()}')
-    print(f'N val: {val_meta.count()}')
-    print(f'N test: {test_meta.count()}')
-
-    test_meta.show(1)
-    test_meta.printSchema()
-
-    # Different way of subsampling here -> if above does not work 
-    # Subsample metadata in each split
-    #train_meta = train_meta.sample(withReplacement=False, fraction=meta_limit, seed=42)
-    #val_meta = val_meta.sample(withReplacement=False, fraction=meta_limit, seed=42)
-    #test_meta = test_meta.sample(withReplacement=False, fraction=meta_limit, seed=42)
-
     ## MODEL TRAINING AND EVALUATION
     
-    """
     pixel_extractor = extractPixels()
     df_transformer = explode_pixel_arrays_into_df()
     indices_transformer = create_indices()
@@ -304,7 +286,7 @@ def main(session_name, meta_limit):
     accuracy = evaluator.evaluate(preds)
 
     print(f"Training set accuracy: {accuracy}")
-    """
+
     spark.stop()
 
 # -----------------------------------------------------------------------------
@@ -313,7 +295,7 @@ def main(session_name, meta_limit):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Spark session name')
     parser.add_argument('--session_name', type=str, required=True, help='Name of the Spark session')
-    parser.add_argument('--meta_limit', type=float, required=True, help='Limit the number of images per split to process')
+    parser.add_argument('--subsample', type=float, required=True, help='Limit the number of images per split to process')
     args = parser.parse_args()
 
     main(args.session_name, args.meta_limit)
