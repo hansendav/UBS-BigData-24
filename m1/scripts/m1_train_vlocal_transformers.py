@@ -96,7 +96,6 @@ class extractPixels(Transformer):
             StructField('label', ArrayType(LongType()), True)
         ])
 
-    @log_runtime('Get band paths')
     def get_band_paths(self, patch_path, is_s2=False):
         """
         Extracts image band paths from a given directory path. 
@@ -122,7 +121,6 @@ class extractPixels(Transformer):
                 band = src.read()
             return band
 
-    @log_runtime('Read all bands')
     def read_bands(self, band_paths):
         bands = [self.read_band(band_path) for band_path in band_paths]
         bands = [band.flatten() for band in bands]
@@ -144,6 +142,8 @@ class extractPixels(Transformer):
         s2_band_paths = self.get_band_paths(s2_path, is_s2=True)
         s1_band_paths = self.get_band_paths(s1_path)
         label_band_paths = self.get_band_paths(label_path)
+
+
         
         image_bands_s2 = self.read_bands(s2_band_paths)
         image_bands_s1 = self.read_bands(s1_band_paths)
@@ -166,7 +166,6 @@ class extractPixels(Transformer):
                             image_bands_s2[3].tolist(),
                             image_label.flatten().tolist())
         return row
-    @log_runtime('Image to pixels array')
     def _transform(self, df):
         # set create_pixel_arrays as a UDF 
         create_pixel_arrays = udf(self.create_pixel_arrays, self.schema_pixelarray)
@@ -268,7 +267,6 @@ class custom_vector_assembler(Transformer):
 # -----------------------------------------------------------------------------
 # ### Define main 
 # -----------------------------------------------------------------------------
-@log_runtime('Main')
 def main(session_name, subsample):
     spark = SparkSession.builder\
         .appName(session_name)\
@@ -339,10 +337,10 @@ def main(session_name, subsample):
     preds_train = rf_model.transform(train_meta).select('label', 'prediction')
     print('Predictions made')
     
-    #evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
-    #accuracy = evaluator.evaluate(preds_train)
+    evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
+    accuracy = evaluator.evaluate(preds_train)
 
-    #print(f"Training set accuracy: {accuracy}")
+    print(f"Training set accuracy: {accuracy}")
     
     spark.stop()
 
