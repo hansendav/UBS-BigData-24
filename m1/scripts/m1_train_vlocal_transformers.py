@@ -95,10 +95,8 @@ class extractPixels(Transformer):
         s1_path = rows[0]
         s2_path = rows[1]
         label_path = rows[2]
-        patch_id = rows[3]
-        split = rows[4]
 
-        return s1_path, s2_path, label_path, patch_id, split
+        return s1_path, s2_path, label_path
 
 
     def create_pixel_arrays(self, patch_path_array):
@@ -235,24 +233,39 @@ class custom_vector_assembler(Transformer):
 def main(session_name, meta_limit):
     spark = SparkSession.builder\
         .appName(session_name)\
+        .config("spark.sql.execution.arrow.pyspark.enabled", "true")\
         .getOrCreate()
     print(f'Spark session created: {session_name}')
 
+    meta_schema = StructType([
+        StructField('split', StringType(), True),
+        StructField('s1_path', StringType(), True),
+        StructField('s2_path', StringType(), True),
+        StructField('label_path', StringType(), True)
+    ])
+
     # Read metadata 
-    meta = spark.read.parquet('s3://ubs-cde/home/e2405193/bigdata/meta_with_image_paths.parquet')
+    meta = spark.read.schema(meta_schema).parquet('s3://ubs-cde/home/e2405193/bigdata/meta_with_image_paths.parquet')
+    
+    # Subsample dataset for gradually increasing the size of the dataset
+    fractions = {"train": 0.1, "test": 0.1, "val": 0.1}
+
+    meta = meta.sampleBy('split', fractions, seed=42)
+    meta = meta.repartition(100, 'split')
     
     # Add column that holds as array all paths to the respective images for each patch 
     meta = prepare_cu_metadata(meta)
-
+    
     # Split into train, test, validation 
     train_meta = meta.filter(meta.split == 'train') 
     val_meta = meta.filter(meta.split == 'val')
     test_meta = meta.filter(meta.split == 'test')
-
+    	
+    # Different way of subsampling here -> if above does not work 
     # Subsample metadata in each split
-    train_meta = train_meta.sample(withReplacement=False, fraction=meta_limit, seed=42)
-    val_meta = val_meta.sample(withReplacement=False, fraction=meta_limit, seed=42)
-    test_meta = test_meta.sample(withReplacement=False, fraction=meta_limit, seed=42)
+    #train_meta = train_meta.sample(withReplacement=False, fraction=meta_limit, seed=42)
+    #val_meta = val_meta.sample(withReplacement=False, fraction=meta_limit, seed=42)
+    #test_meta = test_meta.sample(withReplacement=False, fraction=meta_limit, seed=42)
 
     ## MODEL TRAINING AND EVALUATION
     
