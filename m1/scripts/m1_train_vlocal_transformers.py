@@ -246,7 +246,7 @@ def main(session_name, meta_limit):
     meta = spark.read.schema(meta_schema).parquet('s3://ubs-cde/home/e2405193/bigdata/meta_with_image_paths.parquet')
     
     # Subsample dataset for gradually increasing the size of the dataset
-    fractions = {"train": 0.1, "test": 0.1, "val": 0.1}
+    fractions = {"train": 0.1, "test": 0.1, "validation": 0.1}
 
     meta = meta.sampleBy('split', fractions, seed=42)
     meta = meta.repartition(100, 'split')
@@ -260,7 +260,7 @@ def main(session_name, meta_limit):
 
     # Split into train, test, validation 
     train_meta = meta.filter(meta.split == 'train') 
-    val_meta = meta.filter(meta.split == 'val')
+    val_meta = meta.filter(meta.split == 'validation')
     test_meta = meta.filter(meta.split == 'test')
 
     print(f'N train: {train_meta.count()}')
