@@ -205,7 +205,8 @@ class create_indices(Transformer):
 class change_label_names(Transformer):
     def __init__(self, dict):
         super(change_label_names, self).__init__()    
-        self.dict = dict
+        def _set_dict(self, spark):
+            self.dict = spark.read.csv('s3://ubs-cde/home/e2405193/bigdata/label_encoding.csv', header=True)
 
     def _transform(self, df):
         df = df.join(self.dict, df.label == self.dict.ID, 'inner')\
@@ -257,11 +258,6 @@ def main(session_name, subsample):
     # Add column that holds as array all paths to the respective images for each patch 
     meta = prepare_cu_metadata(meta)
 
-
-    # Load and broadcast label dictionary
-    label_dict = spark.read.csv('s3://ubs-cde/home/e2405193/bigdata/label_encoding.csv', header=True)
-    label_dict = spark.sparkContext.broadcast(label_dict)
-
     # Split into train, test, validation 
     train_meta = meta.filter(meta.split == 'train') 
     val_meta = meta.filter(meta.split == 'validation')
@@ -276,7 +272,8 @@ def main(session_name, subsample):
     pixel_extractor = extractPixels()
     df_transformer = explode_pixel_arrays_into_df()
     indices_transformer = create_indices()
-    label_transformer = change_label_names(dict=label_dict)
+    label_transformer = change_label_names()
+    label_transformer._set_dict(spark)
     feature_assembler = custom_vector_assembler()
 
     # Random Forest Classifier
