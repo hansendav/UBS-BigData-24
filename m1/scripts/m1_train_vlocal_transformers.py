@@ -263,7 +263,14 @@ def main(session_name, meta_limit):
     train_meta = meta.filter(meta.split == 'train') 
     val_meta = meta.filter(meta.split == 'val')
     test_meta = meta.filter(meta.split == 'test')
-    	
+
+    print(train_meta.count())
+    print(val_meta.count())
+    print(test_meta.count())
+
+    test_meta.show(1)
+    test_meta.printSchema()
+
     # Different way of subsampling here -> if above does not work 
     # Subsample metadata in each split
     #train_meta = train_meta.sample(withReplacement=False, fraction=meta_limit, seed=42)
@@ -272,6 +279,7 @@ def main(session_name, meta_limit):
 
     ## MODEL TRAINING AND EVALUATION
     
+    """
     pixel_extractor = extractPixels()
     df_transformer = explode_pixel_arrays_into_df()
     indices_transformer = create_indices()
@@ -297,7 +305,7 @@ def main(session_name, meta_limit):
     accuracy = evaluator.evaluate(preds)
 
     print(f"Training set accuracy: {accuracy}")
-
+    """
     spark.stop()
 
 # -----------------------------------------------------------------------------
