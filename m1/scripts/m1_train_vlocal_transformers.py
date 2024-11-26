@@ -259,7 +259,9 @@ def main(session_name, subsample):
     val_meta = meta.filter(meta.split == 'validation')
     test_meta = meta.filter(meta.split == 'test')
 
-    test_img = train_meta.limit(1)
+    train_limit = train_meta.limit(1)
+    val_limit = val_meta.limit(1)
+    test_limit = test_meta.limit(1)
 
     ## MODEL TRAINING AND EVALUATION
 
@@ -278,19 +280,16 @@ def main(session_name, subsample):
     df_transformer,
     indices_transformer,
     label_transformer,
-    feature_assembler])
-    #rf])
+    feature_assembler,
+    rf])
 
-    rf_model = pipeline.fit(test_img)
+    rf_model = pipeline.fit(train_limit)
     
-    outputs = rf_model.transform(test_img)
-    print(outputs.show(1))
+    preds_train = rf_model.transform(train_meta)
+    evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
+    accuracy = evaluator.evaluate(preds)
 
-    #preds_train = rf_model.transform(train_meta)
-    #evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
-    #accuracy = evaluator.evaluate(preds)
-
-    #print(f"Training set accuracy: {accuracy}")
+    print(f"Training set accuracy: {accuracy}")
     
     spark.stop()
 
