@@ -276,16 +276,19 @@ def main(session_name, subsample):
     df_transformer,
     indices_transformer,
     label_transformer,
-    feature_assembler,
-    rf])
+    feature_assembler])
+    #rf])
 
     rf_model = pipeline.fit(train_meta)
     
-    preds_train = rf_model.transform(train_meta)
-    evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
-    accuracy = evaluator.evaluate(preds)
+    outputs = pipeline.transform(train_meta)
+    print(outputs.show(1))
 
-    print(f"Training set accuracy: {accuracy}")
+    #preds_train = rf_model.transform(train_meta)
+    #evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
+    #accuracy = evaluator.evaluate(preds)
+
+    #print(f"Training set accuracy: {accuracy}")
 
     spark.stop()
 
