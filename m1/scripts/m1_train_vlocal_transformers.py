@@ -287,7 +287,7 @@ def main(session_name, subsample):
     
     preds_train = rf_model.transform(train_meta)
     evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
-    accuracy = evaluator.evaluate(preds)
+    accuracy = evaluator.evaluate(preds_train)
 
     print(f"Training set accuracy: {accuracy}")
     
