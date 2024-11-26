@@ -298,8 +298,11 @@ def main(session_name, subsample):
     preds_train = rf_model.transform(train_meta)
     print('Predictions made')
     preds_train.printSchema()
+
+    print('Model evaluation example')
+    preds_train.show(5)
     
-    #evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
+    evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
     #accuracy = evaluator.evaluate(preds_train)
 
     #print(f"Training set accuracy: {accuracy}")
