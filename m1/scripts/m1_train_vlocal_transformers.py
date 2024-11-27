@@ -322,25 +322,6 @@ def main(session_name, subsample):
     # Random Forest Classifier
     rf = RandomForestClassifier(labelCol="label", featuresCol="features")
 
-    print(f'In count: {train_limit.count()}')
-    train_limit.printSchema()
-
-    # Pipeline setup
-    pipeline = Pipeline(stages=[pixel_extractor,
-    df_transformer,
-    indices_transformer,
-    label_transformer,
-    feature_assembler])
-    #rf])   
-
-    out = pipeline.fit(train_limit).transform(train_limit)
-    test_na = out.filter((out.features.isNull()) | (out.label.isNull()))
-
-    print(f'Out na count: {test_na.count()}')
-    test_na.show()
-    test_na.printSchema()
-
-
     # Pipeline setup
     pipeline = Pipeline(stages=[pixel_extractor,
     df_transformer,
@@ -349,34 +330,20 @@ def main(session_name, subsample):
     feature_assembler,
     rf])   
 
-    rf_model = pipeline.fit(train_limit)
-    preds_train = rf_model.transform(train_meta)
-
-    preds_train.show()
-
-    null_counts = preds_train.select([count(when(col(c).isNull(), c)).alias(c) for c in preds_train.columns])
-
-    print(f'Null counts in preds: {null_counts.count()}')
-
-    """
-
     print('Pipeline created')
 
     rf_model = pipeline.fit(train_limit)
     print('Model fitted')
 
-    preds_train = rf_model.transform(train_meta).select('label', 'prediction')
+    preds_train = rf_model.transform(train_limit).select('label', 'prediction')
     print('Predictions made')
 
-    test_na = preds_train.filter(preds_train.features.isNull())
-    print(test_na.count())
 
-
-    #evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
-    #accuracy = evaluator.evaluate(preds_train)
+    evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
+    accuracy = evaluator.evaluate(preds_train)
 
     print(f"Training set accuracy: {accuracy}")
-    """
+    
     spark.stop()
 
 # -----------------------------------------------------------------------------
