@@ -343,7 +343,7 @@ def main(session_name, subsample):
     evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
     train_accuracy = evaluator.evaluate(preds_train)
     test_accuracy = evaluator.evaluate(preds_test)
-    print(f"Training set accuracy: {accuracy}")
+    print(f"Training set accuracy: {training_accuracy}")
     print(f'Test set accuracy: {test_accuracy}')
 
     
