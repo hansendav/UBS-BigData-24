@@ -333,7 +333,7 @@ def main(session_name, subsample):
     #rf])   
 
     out = pipeline.fit(train_limit).transform(train_limit)
-    test_na = preds_train.filter(out.features.isNull())
+    test_na = out.filter(out.features.isNull())
 
     print(f'Out na count: {test_na.count()}')
 
