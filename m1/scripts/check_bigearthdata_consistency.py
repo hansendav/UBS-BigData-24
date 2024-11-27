@@ -47,8 +47,7 @@ get_number_of_bands_udf = f.udf(get_number_of_bands, IntegerType())
 
 def main(): 
     spark = SparkSession.builder\
-        .appName('check_bigearthdata_consistency')\
-        .config('pandas.arrow.enabled', 'true')\
+        .appName('check_bigedata_con')\
         .master('yarn')\
         .getOrCreate()
 
