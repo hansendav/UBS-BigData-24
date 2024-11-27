@@ -74,10 +74,10 @@ def main():
     
     
 
-    missing_bands = sample.filter((f.col('ns2bands') != 13) | (f.col('ns1bands') != 2) | (f.col('nlabelbands') != 1))
+    missing_bands = sample.filter((f.col('ns2bands') != 12) | (f.col('ns1bands') != 2) | (f.col('nlabelbands') != 1))
 
     missing_bands.show()
-    
+
     print(f'Number of missing bands: {missing_bands.count()}')
     #missing_bands.write.parquet('s3://ubs-cde/home/e2405193/bigdata/missing_bands.parquet')
 
