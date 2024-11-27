@@ -65,7 +65,7 @@ def main():
     
     meta = prepare_cu_metadata(meta)
 
-    meta = sample.withColumn('ns2bands', get_number_of_bands_udf(f.col('s2_path')))\
+    meta = meta.withColumn('ns2bands', get_number_of_bands_udf(f.col('s2_path')))\
         .withColumn('ns1bands', get_number_of_bands_udf(f.col('s1_path')))\
         .withColumn('nlabelbands', get_number_of_bands_udf(f.col('label_path')))
 
