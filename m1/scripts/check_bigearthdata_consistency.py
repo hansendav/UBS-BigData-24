@@ -65,11 +65,13 @@ def main():
     
     meta = prepare_cu_metadata(meta)
 
-    meta = meta.withColumn('ns2bands', get_number_of_bands_udf(f.col('s2_path')))\
+    sample = meta.limit(1)
+
+    sample = sample.withColumn('ns2bands', get_number_of_bands_udf(f.col('s2_path')))\
         .withColumn('ns1bands', get_number_of_bands_udf(f.col('s1_path')))\
         .withColumn('nlabelbands', get_number_of_bands_udf(f.col('label_path')))
 
-    missing_bands = meta.filter((f.col('ns2bands') != 13) | (f.col('ns1bands') != 2) | (f.col('nlabelbands') != 1))
+    missing_bands = sample.filter((f.col('ns2bands') != 13) | (f.col('ns1bands') != 2) | (f.col('nlabelbands') != 1))
 
     print(f'Number of missing bands: {missing_bands.count()}')
     #missing_bands.write.parquet('s3://ubs-cde/home/e2405193/bigdata/missing_bands.parquet')
