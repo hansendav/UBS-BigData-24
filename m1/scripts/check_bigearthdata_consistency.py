@@ -49,7 +49,6 @@ def main():
     spark = SparkSession.builder\
         .appName('check_bigearthdata_consistency')\
         .config('pandas.arrow.enabled', 'true')\
-        .config('spark.executor.instances', '4')\
         .master('yarn')\
         .getOrCreate()
 
