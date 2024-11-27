@@ -64,17 +64,15 @@ def main():
     meta = spark.read.schema(meta_schema).parquet('s3://ubs-cde/home/e2405193/bigdata/meta_with_image_paths.parquet')
     
     meta = prepare_cu_metadata(meta)
-    sample = meta.limit(1)
 
-    sample.printSchema()
-    sample.show()
-
-    sample = sample.withColumn('ns2bands', get_number_of_bands_udf(f.col('s2_path')))\
+    meta = sample.withColumn('ns2bands', get_number_of_bands_udf(f.col('s2_path')))\
         .withColumn('ns1bands', get_number_of_bands_udf(f.col('s1_path')))\
         .withColumn('nlabelbands', get_number_of_bands_udf(f.col('label_path')))
 
-    sample.show()
-        
+    missing_bands = meta.filter(f.col('ns2bands') != 12 or f.col('ns1bands') != 2 or f.col('nlabelbands') != 1)
+
+    missing_bands.write.mode('overwrite').parquet('s3://ubs-cde/home/e2405193/bigdata/missing_bands.parquet')
+
     spark.stop()
     
 
