@@ -78,8 +78,10 @@ def main():
 
     missing_bands.show()
 
-    print(f'Number of missing bands: {missing_bands.count()}')
-    #missing_bands.write.parquet('s3://ubs-cde/home/e2405193/bigdata/missing_bands.parquet')
+    missing_bands.write.parquet('s3://ubs-cde/home/e2405193/bigdata/missing_bands.parquet', mode='overwrite')
+
+    test_df = spark.read.parquet('s3://ubs-cde/home/e2405193/bigdata/missing_bands.parquet')
+    test_df.show()
 
     spark.stop()
     
