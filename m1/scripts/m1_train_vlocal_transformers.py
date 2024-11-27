@@ -323,6 +323,7 @@ def main(session_name, subsample):
     rf = RandomForestClassifier(labelCol="label", featuresCol="features")
 
     print(f'In count: {train_limit.count()}')
+    train_limit.printSchema()
 
     # Pipeline setup
     pipeline = Pipeline(stages=[pixel_extractor,
@@ -336,6 +337,8 @@ def main(session_name, subsample):
     test_na = out.filter(out.features.isNull())
 
     print(f'Out na count: {test_na.count()}')
+    test_na.show()
+    test_na.printSchema()
 
     """
 
