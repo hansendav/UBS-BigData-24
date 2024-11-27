@@ -322,7 +322,7 @@ def main(session_name, subsample):
     # Random Forest Classifier
     rf = RandomForestClassifier(labelCol="label", featuresCol="features")
 
-    print(train_limit.count())
+    print(f'In count: {train_limit.count()}')
 
     # Pipeline setup
     pipeline = Pipeline(stages=[pixel_extractor,
@@ -330,7 +330,14 @@ def main(session_name, subsample):
     indices_transformer,
     label_transformer,
     feature_assembler])
-    #rf])
+    #rf])   
+
+    out = pipeline.fit(train_limit).transform(train_limit)
+    test_na = preds_train.filter(out.features.isNull())
+
+    print(f'Out na count: {test_na.count()}')
+
+    """
 
     print('Pipeline created')
 
@@ -342,13 +349,13 @@ def main(session_name, subsample):
 
     test_na = preds_train.filter(preds_train.features.isNull())
     print(test_na.count())
-    
-        
+
+
     #evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
     #accuracy = evaluator.evaluate(preds_train)
 
     print(f"Training set accuracy: {accuracy}")
-    
+    """
     spark.stop()
 
 # -----------------------------------------------------------------------------
