@@ -75,6 +75,24 @@ def prepare_cu_metadata(metadata):
 
     return metadata
 
+
+def hyperparameter_tuning(pipeline, train_meta, evaluator, numFolds=3):
+    paramGrid = ParamGridBuilder()\
+    .addGrid(rf.numTrees, [10, 50, 100, 150, 200, 300])\
+    .addGrid(rf.maxDepth, [4, 16, 64, 256])\
+    .addGrid(rf.minInstancesPerNode, [2, 8, 16, 32])\
+    .build()
+
+    crossval = CrossValidator(estimator=pipeline,
+                            estimatorParamMaps=paramGrid,
+                            evaluator=evaluator,
+                            numFolds=numFolds)  
+
+    cv_model = crossval.fit(train_meta)
+
+    return cv_model
+
+
 # -----------------------------------------------------------------------------
 # ### Definition custom transformers 
 # ----------------------------------------------------------------------------- 
@@ -332,28 +350,12 @@ def main(session_name, subsample):
     rf_model = pipeline.fit(train_meta)
     print('Model fitted')
 
-
-    # Setup hyperparameter tuning
-
-    evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
-
-
-    paramGrid = ParamGridBuilder()\
-    .addGrid(rf.numTrees, [10, 50, 100, 150, 200, 300])\
-    .addGrid(rf.maxDepth, [4, 16, 64, 256])\
-    .addGrid(rf.minInstancesPerNode, [2, 8, 16, 32])\
-    .build()
-
-    crossval = CrossValidator(estimator=pipeline,
-                            estimatorParamMaps=paramGrid,
-                            evaluator=evaluator,
-                            numFolds=3)  
-
-    cv_model = crossval.fit(train_meta)
-
     preds_train = cv_model.transform(train_meta).select('label', 'prediction')
     preds_test = cv_model.transform(test_meta).select('label', 'prediction')
     print('Predictions made')
+
+    # Evaluation  
+    evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
 
     train_accuracy = evaluator.evaluate(preds_train)
     test_accuracy = evaluator.evaluate(preds_test)
