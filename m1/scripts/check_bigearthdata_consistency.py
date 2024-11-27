@@ -43,7 +43,7 @@ def get_number_of_bands(patch_path, is_s2=False):
         
         return nfiles
 
-get_number_of_bands_udf = f.udf(get_number_of, IntegerType())
+get_number_of_bands_udf = f.udf(get_number_of_bands, IntegerType())
 
 def main(): 
     spark = SparkSession.builder\
