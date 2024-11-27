@@ -322,13 +322,16 @@ def main(session_name, subsample):
     # Random Forest Classifier
     rf = RandomForestClassifier(labelCol="label", featuresCol="features")
 
-    # Pipeline setup    
+    print(train_limit.count())
+
+    # Pipeline setup
     pipeline = Pipeline(stages=[pixel_extractor,
     df_transformer,
     indices_transformer,
     label_transformer,
-    feature_assembler,
-    rf])
+    feature_assembler])
+    #rf])
+
     print('Pipeline created')
 
     rf_model = pipeline.fit(train_limit)
@@ -336,9 +339,13 @@ def main(session_name, subsample):
 
     preds_train = rf_model.transform(train_meta).select('label', 'prediction')
     print('Predictions made')
+
+    test_na = preds_train.filter(preds_train.features.isNull())
+    print(test_na.count())
     
-    evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
-    accuracy = evaluator.evaluate(preds_train)
+        
+    #evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
+    #accuracy = evaluator.evaluate(preds_train)
 
     print(f"Training set accuracy: {accuracy}")
     
