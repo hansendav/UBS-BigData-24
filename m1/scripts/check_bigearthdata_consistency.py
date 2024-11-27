@@ -19,7 +19,7 @@ def prepare_cu_metadata(metadata):
 
     return metadata
 
-def get_number_of(patch_path, is_s2=False):
+def get_number_of_bands(patch_path, is_s2=False):
         """
         Extracts image band paths from a given directory path. 
         ---
@@ -43,7 +43,7 @@ def get_number_of(patch_path, is_s2=False):
         
         return nfiles
 
-get_number_of_udf = f.udf(get_number_of, IntegerType())
+get_number_of_bands_udf = f.udf(get_number_of, IntegerType())
 
 def main(): 
     spark = SparkSession.builder\
@@ -69,9 +69,9 @@ def main():
     sample.printSchema()
     sample.show()
 
-    sample = sample.withColumn('ns2bands', get_band_paths_udf(f.col('s2_path')))\
-        .withColumn('ns1bands', get_band_paths_udf(f.col('s1_path')))\
-        .withColumn('nlabelbands', get_band_paths_udf(f.col('label_path')))
+    sample = sample.withColumn('ns2bands', get_number_of_bands_udf(f.col('s2_path')))\
+        .withColumn('ns1bands', get_number_of_bands_udf(f.col('s1_path')))\
+        .withColumn('nlabelbands', get_number_of_bands_udf(f.col('label_path')))
         
     spark.stop()
     
