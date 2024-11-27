@@ -267,6 +267,7 @@ class custom_vector_assembler(Transformer):
 # -----------------------------------------------------------------------------
 # ### Define main 
 # -----------------------------------------------------------------------------
+@log_runtime('Main')
 def main(session_name, subsample):
     spark = SparkSession.builder\
         .appName(session_name)\
