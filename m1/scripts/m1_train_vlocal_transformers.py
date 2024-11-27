@@ -17,6 +17,7 @@ from pyspark.ml.evaluation import MulticlassClassificationEvaluator
 from pyspark.ml.feature import VectorAssembler
 from pyspark.ml import Transformer
 from pyspark.ml.param.shared import HasInputCols, HasOutputCols
+from pyspark.ml.tuning import ParamGridBuilder, CrossValidator
 
 # -----------------------------------------------------------------------------
 # ### Define wrapper functions 
@@ -307,11 +308,6 @@ def main(session_name, subsample):
     val_meta = meta.filter(meta.split == 'validation')
     test_meta = meta.filter(meta.split == 'test')
 
-    train_limit = train_meta.limit(1)
-    val_limit = val_meta.limit(1)
-    test_limit = test_meta.limit(1)
-
-
     ## MODEL TRAINING AND EVALUATION
 
     pixel_extractor = extractPixels()
@@ -333,20 +329,37 @@ def main(session_name, subsample):
 
     print('Pipeline created')
 
-    rf_model = pipeline.fit(train_limit)
+    rf_model = pipeline.fit(train_meta)
     print('Model fitted')
 
-    preds_train = rf_model.transform(train_limit).select('label', 'prediction')
-    preds_test = rf_model.transform(test_limit).select('label', 'prediction')
-    print('Predictions made')
+
+    # Setup hyperparameter tuning
 
     evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
+
+
+    paramGrid = ParamGridBuilder()\
+    .addGrid(rf.numTrees, [10, 50, 100, 150, 200, 300])\
+    .addGrid(rf.maxDepth, [4, 16, 64, 256])\
+    .addGrid(rf.minInstancesPerNode, [2, 8, 16, 32])\
+    .build()
+
+    crossval = CrossValidator(estimator=pipeline,
+                            estimatorParamMaps=paramGrid,
+                            evaluator=evaluator,
+                            numFolds=3)  
+
+    cv_model = crossval.fit(train_meta)
+
+    preds_train = cv_model.transform(train_meta).select('label', 'prediction')
+    preds_test = cv_model.transform(test_meta).select('label', 'prediction')
+    print('Predictions made')
+
     train_accuracy = evaluator.evaluate(preds_train)
     test_accuracy = evaluator.evaluate(preds_test)
     print(f"Training set accuracy: {train_accuracy}")
     print(f'Test set accuracy: {test_accuracy}')
 
-    
     spark.stop()
 
 # -----------------------------------------------------------------------------
