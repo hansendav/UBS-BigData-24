@@ -340,6 +340,24 @@ def main(session_name, subsample):
     test_na.show()
     test_na.printSchema()
 
+
+    # Pipeline setup
+    pipeline = Pipeline(stages=[pixel_extractor,
+    df_transformer,
+    indices_transformer,
+    label_transformer,
+    feature_assembler,
+    rf])   
+
+    rf_model = pipeline.fit(train_limit)
+    preds_train = rf_model.transform(train_meta)
+
+    preds_train.show()
+
+    null_counts = preds_train.select([count(when(col(c).isNull(), c)).alias(c) for c in preds_train.columns])
+
+    print(f'Null counts in preds: {null_counts.count()}')
+
     """
 
     print('Pipeline created')
