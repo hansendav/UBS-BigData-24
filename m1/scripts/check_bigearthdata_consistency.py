@@ -8,8 +8,8 @@ import pyarrow.parquet as pq
 import pyarrow.fs as fs
 import re 
 
-import numpy as np 
-import pandas as pd
+import numpy as np
+
 
 def prepare_cu_metadata(metadata):
     metadata = metadata \
