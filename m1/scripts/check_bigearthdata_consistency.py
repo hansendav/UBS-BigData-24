@@ -9,6 +9,7 @@ import pyarrow.fs as fs
 import re 
 
 import numpy as np
+import time 
 
 
 def log_runtime(task_name):
