@@ -158,7 +158,7 @@ def main(session_name, subsample):
 
     meta = meta.limit(1) 
 
-    meta.rdd.foreach(stack_image_array)
+    meta.select('paths_array').rdd.map(lambda row: row['paths_array']).foreach(stack_image_array)
 
     spark.stop()
 
