@@ -281,7 +281,7 @@ class custom_vector_assembler(Transformer):
 
     def _transform(self, df):
         feature_cols = [col for col in df.columns if col != 'label']
-        feature_assembler = VectorAssembler(inputCols=feature_cols, outputCol="features")
+        feature_assembler = VectorAssembler(inputCols=feature_cols, outputCol="features", handleInvalid='skip')
         return feature_assembler.transform(df).select('features', 'label')
 # -----------------------------------------------------------------------------
 # ### Define main 
