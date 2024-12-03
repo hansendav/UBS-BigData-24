@@ -350,8 +350,8 @@ def main(session_name, subsample):
     rf_model = pipeline.fit(train_meta)
     print('Model fitted')
 
-    preds_train = cv_model.transform(train_meta).select('label', 'prediction')
-    preds_test = cv_model.transform(test_meta).select('label', 'prediction')
+    preds_train = rf_model.transform(train_meta).select('label', 'prediction')
+    preds_test = rf_model.transform(test_meta).select('label', 'prediction')
     print('Predictions made')
 
     # Evaluation  
