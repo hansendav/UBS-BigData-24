@@ -158,10 +158,7 @@ def main(session_name, subsample):
 
     meta = meta.limit(1) 
 
-    meta.withColumn('stacked_image', stack_image_array(f.col('paths_array')))
-
-
-
+    meta.rdd.foreach(stack_image_array)
 
     spark.stop()
 
