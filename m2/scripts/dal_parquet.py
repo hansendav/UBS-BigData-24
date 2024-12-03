@@ -97,7 +97,7 @@ def read_bands(band_paths):
     bands = [read_band(band_path) for band_path in band_paths]
     return bands
 
-def get_paths_from_meta(self, patch_path_array):
+def get_paths_from_meta(patch_path_array):
     rows = patch_path_array
     s1_path = rows[0]
     s2_path = rows[1]
