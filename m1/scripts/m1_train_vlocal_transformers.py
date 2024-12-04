@@ -9,6 +9,7 @@ import re
 import numpy as np
 import argparse
 import time
+import sys
 
 # MLIB 
 from pyspark.ml import Pipeline
@@ -91,7 +92,6 @@ def hyperparameter_tuning(pipeline, train_meta, evaluator, numFolds=3):
     cv_model = crossval.fit(train_meta)
 
     return cv_model
-
 
 # -----------------------------------------------------------------------------
 # ### Definition custom transformers 
@@ -345,14 +345,18 @@ def main(subsample):
     feature_assembler,
     rf])   
     print('Pipeline created')
+    print('Pipeline created', file=sys.stderr)
 
     rf_model = pipeline.fit(train_meta)
     print('Model fitted')
+    print('Model fitted', file=sys.stderr)
 
     preds_train = rf_model.transform(train_meta).select('label', 'prediction')
     print('Train inference')
+    print('Train inference', file=sys.stderr)
     preds_test = rf_model.transform(test_meta).select('label', 'prediction')
     print('Test inference')
+    print('Test inference', file=sys.stderr)
 
     # Evaluation  
     evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
