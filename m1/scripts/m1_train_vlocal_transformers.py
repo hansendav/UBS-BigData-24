@@ -283,16 +283,16 @@ class custom_vector_assembler(Transformer):
         feature_cols = [col for col in df.columns if col != 'label']
         feature_assembler = VectorAssembler(inputCols=feature_cols, outputCol="features", handleInvalid='skip')
         return feature_assembler.transform(df).select('features', 'label')
-# -----------------------------------------------------------------------------
+    
+# ------------------git st-----------------------------------------------------------
 # ### Define main 
 # -----------------------------------------------------------------------------
 @log_runtime('Main')
 def main(session_name, subsample):
     spark = SparkSession.builder\
-        .appName(session_name)\
         .config("spark.sql.execution.arrow.pyspark.enabled", "true")\
         .getOrCreate()
-    print(f'Spark session created: {session_name}')
+    print(f'Spark session created')
 
     meta_schema = StructType([
         StructField('split', StringType(), True),
@@ -344,15 +344,15 @@ def main(session_name, subsample):
     label_transformer,
     feature_assembler,
     rf])   
-
     print('Pipeline created')
 
     rf_model = pipeline.fit(train_meta)
     print('Model fitted')
 
     preds_train = rf_model.transform(train_meta).select('label', 'prediction')
+    print('Train inference')
     preds_test = rf_model.transform(test_meta).select('label', 'prediction')
-    print('Predictions made')
+    print('Test inference')
 
     # Evaluation  
     evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
@@ -369,7 +369,6 @@ def main(session_name, subsample):
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Spark session name')
-    parser.add_argument('--session_name', type=str, required=True, help='Name of the Spark session')
     parser.add_argument('--subsample', type=float, required=True, help='Limit the number of images per split to process')
     args = parser.parse_args()
 
