@@ -76,23 +76,6 @@ def prepare_cu_metadata(metadata):
 
     return metadata
 
-
-def hyperparameter_tuning(pipeline, train_meta, evaluator, numFolds=3):
-    paramGrid = ParamGridBuilder()\
-    .addGrid(rf.numTrees, [10, 50, 100, 150, 200, 300])\
-    .addGrid(rf.maxDepth, [4, 16, 64, 256])\
-    .addGrid(rf.minInstancesPerNode, [2, 8, 16, 32])\
-    .build()
-
-    crossval = CrossValidator(estimator=pipeline,
-                            estimatorParamMaps=paramGrid,
-                            evaluator=evaluator,
-                            numFolds=numFolds)  
-
-    cv_model = crossval.fit(train_meta)
-
-    return cv_model
-
 # -----------------------------------------------------------------------------
 # ### Definition custom transformers 
 # ----------------------------------------------------------------------------- 
@@ -292,7 +275,9 @@ def main(subsample):
     spark = SparkSession.builder\
         .config("spark.sql.execution.arrow.pyspark.enabled", "true")\
         .getOrCreate()
+
     print(f'Spark session created')
+    print(f'Spark session created', file=sys.stderr)
 
     meta_schema = StructType([
         StructField('split', StringType(), True),
@@ -302,10 +287,13 @@ def main(subsample):
     ])
 
     # Read metadata 
-    meta = spark.read.schema(meta_schema).parquet('s3://ubs-cde/home/e2405193/bigdata/meta_with_image_paths.parquet')
-    
+    meta = spark.read\
+        .schema(meta_schema)\
+        .parquet('s3://ubs-cde/home/e2405193/bigdata/meta_with_image_paths.parquet')\
+        .filter(f.col('split').isin(['train', 'test']))
+
     # Subsample dataset for gradually increasing the size of the dataset
-    fractions = {"train": subsample, "test": subsample, "validation": subsample}
+    fractions = {"train": subsample, "test": subsample}
 
     meta = meta.sampleBy('split', fractions, seed=42)
     
@@ -316,14 +304,12 @@ def main(subsample):
     # Add column that holds as array all paths to the respective images for each patch 
     meta = prepare_cu_metadata(meta)
 
-
     # Read label dictionary
     label_dict = spark.read.csv('s3://ubs-cde/home/e2405193/bigdata/label_encoding.csv', header=True)
 
 
     # Split into train, test, validation 
     train_meta = meta.filter(meta.split == 'train') 
-    val_meta = meta.filter(meta.split == 'validation')
     test_meta = meta.filter(meta.split == 'test')
 
     ## MODEL TRAINING AND EVALUATION
