@@ -368,10 +368,10 @@ def main(session_name, subsample):
 # ### Run main
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Spark session name')
+    parser = argparse.ArgumentParser(description='Subsample of the BigEarthNet')
     parser.add_argument('--subsample', type=float, required=True, help='Limit the number of images per split to process')
     args = parser.parse_args()
 
-    main(args.session_name, args.subsample)
+    main(args.subsample)
 # -----------------------------------------------------------------------------
 # ### End of script
