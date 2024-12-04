@@ -288,7 +288,7 @@ class custom_vector_assembler(Transformer):
 # ### Define main 
 # -----------------------------------------------------------------------------
 @log_runtime('Main')
-def main(session_name, subsample):
+def main(subsample):
     spark = SparkSession.builder\
         .config("spark.sql.execution.arrow.pyspark.enabled", "true")\
         .getOrCreate()
