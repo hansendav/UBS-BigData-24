@@ -333,25 +333,22 @@ def main(subsample):
     print('Pipeline created')
     print('Pipeline created', file=sys.stderr)
 
+    # Model fitting
     rf_model = pipeline.fit(train_meta)
     print('Model fitted')
     print('Model fitted', file=sys.stderr)
 
-    preds_train = rf_model.transform(train_meta).select('label', 'prediction')
-    print('Train inference')
-    print('Train inference', file=sys.stderr)
+    # Test inference
     preds_test = rf_model.transform(test_meta).select('label', 'prediction')
     print('Test inference')
     print('Test inference', file=sys.stderr)
 
-    # Evaluation  
+    # Test evaluatopm
     evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
 
-    train_accuracy = evaluator.evaluate(preds_train)
     test_accuracy = evaluator.evaluate(preds_test)
-    print(f"Training set accuracy: {train_accuracy}")
     print(f'Test set accuracy: {test_accuracy}')
-
+    peint(f'Test set accuracy: {test_accuracy}', file=sys.stderr)
     spark.stop()
 
 # -----------------------------------------------------------------------------
