@@ -296,11 +296,8 @@ def main(subsample):
     fractions = {"train": subsample, "test": subsample}
 
     meta = meta.sampleBy('split', fractions, seed=42)
+    meta = meta.repartition(100)
     
-    
-    # repartition <--- CHECK THIS 
-    #meta = meta.repartition(100, 'split')
-   
     # Add column that holds as array all paths to the respective images for each patch 
     meta = prepare_cu_metadata(meta)
 
@@ -309,8 +306,8 @@ def main(subsample):
 
 
     # Split into train, test, validation 
-    train_meta = meta.filter(meta.split == 'train') 
-    test_meta = meta.filter(meta.split == 'test')
+    train_meta = meta.filter(meta.split == 'train').repartition(100)
+    test_meta = meta.filter(meta.split == 'test').repartition(50)
 
     ## MODEL TRAINING AND EVALUATION
 
