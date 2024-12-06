@@ -22,7 +22,7 @@ nohup spark-submit \
     --conf spark.dynamicAllocation.minExecutors=2 \
     --conf spark.dynamicAllocation.maxExecutors="$NUM_EXECUTORS" \
     --conf spark.dynamicAllocation.initialExecutors=4 \
-    --conf spark.shuffle.service.enabled=true \ 
+    --conf spark.shuffle.service.enabled=true \
     --executor-cores "$EXECUTOR_CORES" \
     --executor-memory "$EXECUTOR_MEMORY" \
     --driver-memory "$DRIVER_MEMORY" \
