@@ -331,24 +331,20 @@ def main(subsample):
     feature_assembler,
     rf])   
     print('Pipeline created')
-    print('Pipeline created', file=sys.stderr)
 
     # Model fitting
     rf_model = pipeline.fit(train_meta)
     print('Model fitted')
-    print('Model fitted', file=sys.stderr)
 
     # Test inference
     preds_test = rf_model.transform(test_meta).select('label', 'prediction')
     print('Test inference')
-    print('Test inference', file=sys.stderr)
 
     # Test evaluatopm
     evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
 
     test_accuracy = evaluator.evaluate(preds_test)
     print(f'Test set accuracy: {test_accuracy}')
-    peint(f'Test set accuracy: {test_accuracy}', file=sys.stderr)
     spark.stop()
 
 # -----------------------------------------------------------------------------
