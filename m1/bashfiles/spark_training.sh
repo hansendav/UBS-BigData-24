@@ -18,11 +18,6 @@ nohup spark-submit \
     --name "$APP_NAME" \
     --master "$MASTER" \
     --deploy-mode "$DEPLOY_MODE" \
-    #--conf spark.dynamicAllocation.enabled=true \
-    #--conf spark.dynamicAllocation.minExecutors=2 \
-    #--conf spark.dynamicAllocation.maxExecutors="$NUM_EXECUTORS" \
-    #--conf spark.dynamicAllocation.initialExecutors=2 \
-    #--conf soark.shuffle.service.enabled=true \
     --num-executors "$NUM_EXECUTORS" \
     --executor-cores "$EXECUTOR_CORES" \
     --executor-memory "$EXECUTOR_MEMORY" \
@@ -33,3 +28,10 @@ nohup spark-submit \
 
 # Upload logfile to S3
 nohup aws s3 cp "$LOGFILE_NAME" "$S3_BUCKET/$LOGFILE_NAME" &
+
+# Dynamic allocation configurations (commented out)
+# --conf spark.dynamicAllocation.enabled=true
+# --conf spark.dynamicAllocation.minExecutors=2
+# --conf spark.dynamicAllocation.maxExecutors="$NUM_EXECUTORS"
+# --conf spark.dynamicAllocation.initialExecutors=2
+# --conf spark.shuffle.service.enabled=true
