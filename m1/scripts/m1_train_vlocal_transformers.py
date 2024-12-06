@@ -296,25 +296,28 @@ def main(subsample):
     fractions = {"train": subsample, "test": subsample}
 
     meta = meta.sampleBy('split', fractions, seed=42)
-    meta = meta.repartition(100)
+    meta = meta.repartition(200)
     
     # Add column that holds as array all paths to the respective images for each patch 
     meta = prepare_cu_metadata(meta)
 
     # Read label dictionary
     label_dict = spark.read.csv('s3://ubs-cde/home/e2405193/bigdata/label_encoding.csv', header=True)
+    
+    # Broadcast the label dictionary
+    label_dict = spark.sparkContext.broadcast(label_dict.collect())
 
 
     # Split into train, test, validation 
-    train_meta = meta.filter(meta.split == 'train').repartition(100)
-    test_meta = meta.filter(meta.split == 'test').repartition(50)
+    train_meta = meta.filter(meta.split == 'train').repartition(200)
+    test_meta = meta.filter(meta.split == 'test').repartition(200)
 
     ## MODEL TRAINING AND EVALUATION
 
     pixel_extractor = extractPixels()
     df_transformer = explode_pixel_arrays_into_df()
     indices_transformer = create_indices()
-    label_transformer = change_label_names(dict=label_dict)
+    label_transformer = change_label_names(dict=spark.createDataFrame(label_dict.value))
     feature_assembler = custom_vector_assembler()
 
     # Random Forest Classifier
