@@ -305,8 +305,7 @@ def main(subsample):
     label_dict = spark.read.csv('s3://ubs-cde/home/e2405193/bigdata/label_encoding.csv', header=True)
     
     # Broadcast the label dictionary
-    label_dict = spark.sparkContext.broadcast(label_dict.collect())
-
+    label_dict_broadcast = f.broadcast(label_dict)
 
     # Split into train, test, validation 
     train_meta = meta.filter(meta.split == 'train').repartition(200)
@@ -317,7 +316,7 @@ def main(subsample):
     pixel_extractor = extractPixels()
     df_transformer = explode_pixel_arrays_into_df()
     indices_transformer = create_indices()
-    label_transformer = change_label_names(dict=spark.createDataFrame(label_dict.value))
+    label_transformer = change_label_names(dict=label_dict_broadcast)
     feature_assembler = custom_vector_assembler()
 
     # Random Forest Classifier
