@@ -315,7 +315,7 @@ def evaluate_pipeline(evaluator, preds):
 # ### Define main 
 # -----------------------------------------------------------------------------
 @log_runtime('Main')
-def main(subsample):
+def main(subsample, partitions):
     spark = SparkSession.builder\
         .config("spark.sql.execution.arrow.pyspark.enabled", "true")\
         .getOrCreate()
@@ -343,7 +343,7 @@ def main(subsample):
     meta = meta.sampleBy('split', fractions, seed=42)
 
     # Repartition of the metadata before processing the path columns 
-    meta = meta.repartition(200)
+    meta = meta.repartition(partitions)
     # Add column that holds as array all paths to the respective images
     meta = prepare_cu_metadata(meta)
 
@@ -356,8 +356,8 @@ def main(subsample):
 
     # Split into train, test, validation 
     # Repartition again 
-    train_meta = meta.filter(meta.split == 'train').repartition(200)
-    test_meta = meta.filter(meta.split == 'test').repartition(200)
+    train_meta = meta.filter(meta.split == 'train').repartition(partitions)
+    test_meta = meta.filter(meta.split == 'test').repartition(partitions)
 
     # Print number of rows in train and test splits for logging purposes 
     print(f'Number of rows in train split: {train_meta.count()}')
@@ -406,8 +406,9 @@ def main(subsample):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Subsample for BigEarthNet splits')
     parser.add_argument('--subsample', type=float, required=True, help='Limit the number of images per split to process')
+    parser.add_argument('--partitions', type=int, required=True, default=20, help='Number of partitions based on executors')
     args = parser.parse_args()
 
-    main(args.subsample)
+    main(args.subsample, args.partitions)
 # -----------------------------------------------------------------------------
 # ### End of script
