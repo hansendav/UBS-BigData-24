@@ -2,8 +2,9 @@
 from pyspark.sql import SparkSession 
 from pyspark.sql.types import * # import all datatypes
 import pyarrow.fs as fs
-from pyspark.sql.functions import col, udf
+from pyspark.sql.functions import col, udf, pandas_udf, PandasUDFType, Row
 from pyspark.sql import functions as f
+import pandas as pd
 import rasterio 
 import re 
 import numpy as np
@@ -46,17 +47,6 @@ def log_runtime(task_name):
             return result 
         return wrapper
     return  decorator
-
-def print_start_finish(whatstarted_message):
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            print(f"{whatstarted_message} started")
-            result = func(*args, **kwargs)
-            print(f"{whatstarted_message} finished")
-            return result 
-        return wrapper 
-    return decorator
-
 # -----------------------------------------------------------------------------
 # ### Define functions
 # -----------------------------------------------------------------------------
@@ -154,32 +144,29 @@ class extractPixels(Transformer):
         #patch_id_array = np.repeat(patch_id, len(image_label.flatten()))
         #split_array = np.repeat(split, len(image_label.flatten()))
 
-        row = Row('VH',
-                'VV',
-                'B',
-                'G',
-                'R',
-                'NIR',
-                'label')(image_bands_s1[0].tolist(),
-                            image_bands_s1[1].tolist(),
-                            image_bands_s2[0].tolist(),
-                            image_bands_s2[1].tolist(),
-                            image_bands_s2[2].tolist(),
-                            image_bands_s2[3].tolist(),
-                            image_label.flatten().tolist())
+         row = {
+            'VH': image_bands_s1[0].tolist(),
+            'VV': image_bands_s1[1].tolist(),
+            'B': image_bands_s2[0].tolist(),
+            'G': image_bands_s2[1].tolist(),
+            'R': image_bands_s2[2].tolist(),
+            'NIR': image_bands_s2[3].tolist(),
+            'label': image_label.flatten().tolist()
+        }
+
         return row
+
     def _transform(self, df):
-        # set create_pixel_arrays as a UDF 
-        create_pixel_arrays = udf(self.create_pixel_arrays, self.schema_pixelarray)
+        # set create_pixel_arrays as pandas UDF
+        @oandas_udf(self.schema_pixelarray, PandasUDFType.SCALAR)
+        def create_pixel_arrays(paths_array: pd.Series) -> pd.Series:
+            return paths_array.apply(self.create_pixel_arrays)
 
         # Apply transformation to input df  
         df = df.withColumn('pixel_arrays', create_pixel_arrays('paths_array'))
         df = df.select('pixel_arrays')
 
         return df 
-
-
-
 
 class explode_pixel_arrays_into_df(Transformer):
     def __init__(self):
@@ -292,68 +279,84 @@ def main(subsample):
         .parquet('s3://ubs-cde/home/e2405193/bigdata/meta_with_image_paths.parquet')\
         .filter(f.col('split').isin(['train', 'test']))
 
-    # Subsample dataset for gradually increasing the size of the dataset
-    fractions = {"train": subsample, "test": subsample}
+    # # Subsample dataset for gradually increasing the size of the dataset
+    # fractions = {"train": subsample, "test": subsample}
 
-    meta = meta.sampleBy('split', fractions, seed=42)
-    meta = meta.repartition(200)
+    # meta = meta.sampleBy('split', fractions, seed=42)
+    # meta = meta.repartition(200)
+
+    meta = meta.limit(1)
     
     # Add column that holds as array all paths to the respective images for each patch 
     meta = prepare_cu_metadata(meta)
 
-    # Read label dictionary
-    label_dict = spark.read.csv('s3://ubs-cde/home/e2405193/bigdata/label_encoding.csv', header=True)
+    pixel_extractor = extractPixels()
+
+    # Test the pixel extractor
+    meta = pixel_extractor.transform(meta)
+    print('Pixel extractor applied')
+    meta.show(10))
+
+    # # Read label dictionary
+    # label_dict = spark.read.csv('s3://ubs-cde/home/e2405193/bigdata/label_encoding.csv', header=True)
     
-    # Broadcast the label dictionary
-    label_dict_broadcast = f.broadcast(label_dict)
+    # # Broadcast the label dictionary
+    # label_dict_broadcast = f.broadcast(label_dict)
+
 
     # Split into train, test, validation 
-    train_meta = meta.filter(meta.split == 'train').repartition(200)
-    test_meta = meta.filter(meta.split == 'test').repartition(200)
+    # train_meta = meta.filter(meta.split == 'train').repartition(200)
+    # test_meta = meta.filter(meta.split == 'test').repartition(200)
 
-    ## MODEL TRAINING AND EVALUATION
+    # ## MODEL TRAINING AND EVALUATION
 
-    pixel_extractor = extractPixels()
-    df_transformer = explode_pixel_arrays_into_df()
-    indices_transformer = create_indices()
-    label_transformer = change_label_names(dict=label_dict_broadcast)
-    feature_assembler = custom_vector_assembler()
+    # pixel_extractor = extractPixels()
+    # df_transformer = explode_pixel_arrays_into_df()
+    # indices_transformer = create_indices()
+    # label_transformer = change_label_names(dict=label_dict_broadcast)
+    # feature_assembler = custom_vector_assembler()
 
-    # Random Forest Classifier
-    rf = RandomForestClassifier(labelCol="label", featuresCol="features")
+    # # Random Forest Classifier
+    # rf = RandomForestClassifier(labelCol="label", featuresCol="features")
 
-    # Pipeline setup
-    pipeline = Pipeline(stages=[pixel_extractor,
-    df_transformer,
-    indices_transformer,
-    label_transformer,
-    feature_assembler,
-    rf])   
-    print('Pipeline created')
+    # # Pipeline setup
+    # pipeline = Pipeline(stages=[pixel_extractor,
+    # df_transformer,
+    # indices_transformer,
+    # label_transformer,
+    # feature_assembler,
+    # rf])   
+    # print('Pipeline created')
 
-    # Model fitting
-    rf_model = pipeline.fit(train_meta)
-    print('Model fitted')
+    # # Model fitting
+    # rf_model = pipeline.fit(train_meta)
+    # print('Model fitted')
 
-    # Test inference
-    preds_test = rf_model.transform(test_meta).select('label', 'prediction')
-    print('Test inference')
+    # # Test inference
+    # preds_test = rf_model.transform(test_meta).select('label', 'prediction')
+    # print('Test inference')
 
-    # Test evaluatopm
-    evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
+    # # Test evaluatopm
+    # evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
 
-    test_accuracy = evaluator.evaluate(preds_test)
-    print(f'Test set accuracy: {test_accuracy}')
+    # test_accuracy = evaluator.evaluate(preds_test)
+    # print(f'Test set accuracy: {test_accuracy}')
     spark.stop()
 
 # -----------------------------------------------------------------------------
 # ### Run main
 # -----------------------------------------------------------------------------
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Subsample of the BigEarthNet')
-    parser.add_argument('--subsample', type=float, required=True, help='Limit the number of images per split to process')
-    args = parser.parse_args()
+# if __name__ == '__main__':
+#     parser = argparse.ArgumentParser(description='Subsample of the BigEarthNet')
+#     parser.add_argument('--subsample', type=float, required=True, help='Limit the number of images per split to process')
+#     args = parser.parse_args()
 
-    main(args.subsample)
+#     main(args.subsample)
 # -----------------------------------------------------------------------------
 # ### End of script
+
+# -----------------------------------------------------------------------------
+# ### Test run 
+# -----------------------------------------------------------------------------
+if __name__ == '__main__':
+    main()
