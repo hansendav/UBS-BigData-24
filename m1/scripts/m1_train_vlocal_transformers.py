@@ -339,23 +339,27 @@ def main(subsample):
     fractions = {"train": subsample, "test": subsample}
 
     meta = meta.sampleBy('split', fractions, seed=42)
+
+    # Repartition of the metadata before processing the path columns 
     meta = meta.repartition(200)
-    
-    # Add column that holds as array all paths to the respective images for each patch 
+    # Add column that holds as array all paths to the respective images
     meta = prepare_cu_metadata(meta)
 
     # Read label dictionary
     label_dict = spark.read.csv('s3://ubs-cde/home/e2405193/bigdata/label_encoding.csv', header=True)
     
-    # Broadcast the label dictionary
+    # Broadcast the label dictionary to all executors 
+    # (small df 45 rows 2 columns -> should not impact performance)
     label_dict_broadcast = f.broadcast(label_dict)
 
     # Split into train, test, validation 
+    # Repartition again 
     train_meta = meta.filter(meta.split == 'train').repartition(200)
     test_meta = meta.filter(meta.split == 'test').repartition(200)
 
     ## MODEL TRAINING AND EVALUATION
-
+    
+    # Define transformers
     pixel_extractor = extractPixels()
     df_transformer = explode_pixel_arrays_into_df()
     indices_transformer = create_indices()
@@ -366,22 +370,24 @@ def main(subsample):
     rf = RandomForestClassifier(labelCol="label", featuresCol="features")
 
     # Pipeline setup
-    pipeline = Pipeline(stages=[pixel_extractor,
-    df_transformer,
-    indices_transformer,
-    label_transformer,
-    feature_assembler,
-    rf])   
+    pipeline = Pipeline(
+        stages=[
+            pixel_extractor,
+            df_transformer,
+            indices_transformer,
+            label_transformer,
+            feature_assembler,
+            rf
+            ])   
     print('Pipeline created')
 
-    # Model fitting
+    # Model fitting with time logging (custom function)
     rf_model = fit_pipeline(pipeline, train_meta)
-    print('Model fitted')
 
-    # Test inference 
+    # Test inference with time logging (custom function)
     preds_test = test_inference(rf_model, test_meta)
 
-    # Evaluation 
+    # Evaluation with time logging (custom function)
     evaluator = MulticlassClassificationEvaluator(metricName="accuracy")
     evaluate_pipeline(evaluator, preds_test)
 
@@ -391,7 +397,7 @@ def main(subsample):
 # ### Run main
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Subsample of the BigEarthNet')
+    parser = argparse.ArgumentParser(description='Subsample for BigEarthNet splits')
     parser.add_argument('--subsample', type=float, required=True, help='Limit the number of images per split to process')
     args = parser.parse_args()
 
