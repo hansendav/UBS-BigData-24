@@ -144,14 +144,14 @@ class extractPixels(Transformer):
         #patch_id_array = np.repeat(patch_id, len(image_label.flatten()))
         #split_array = np.repeat(split, len(image_label.flatten()))
 
-         row = {
-            'VH': image_bands_s1[0].tolist(),
-            'VV': image_bands_s1[1].tolist(),
-            'B': image_bands_s2[0].tolist(),
-            'G': image_bands_s2[1].tolist(),
-            'R': image_bands_s2[2].tolist(),
-            'NIR': image_bands_s2[3].tolist(),
-            'label': image_label.flatten().tolist()
+        row = {
+        'VH': image_bands_s1[0].tolist(),
+        'VV': image_bands_s1[1].tolist(),
+        'B': image_bands_s2[0].tolist(),
+        'G': image_bands_s2[1].tolist(),
+        'R': image_bands_s2[2].tolist(),
+        'NIR': image_bands_s2[3].tolist(),
+        'label': image_label.flatten().tolist()
         }
 
         return row
