@@ -329,7 +329,9 @@ def main(subsample):
         StructField('label_path', StringType(), True)
     ])
 
-    # Read metadata 
+    # Read metadata only select columns based on schema and filter 
+    # for train and test splits -> no validation used because no hyperparameter
+    # tuning 
     meta = spark.read\
         .schema(meta_schema)\
         .parquet('s3://ubs-cde/home/e2405193/bigdata/meta_with_image_paths.parquet')\
@@ -357,8 +359,13 @@ def main(subsample):
     train_meta = meta.filter(meta.split == 'train').repartition(200)
     test_meta = meta.filter(meta.split == 'test').repartition(200)
 
-    ## MODEL TRAINING AND EVALUATION
+    # Print number of rows in train and test splits for logging purposes 
+    print(f'Number of rows in train split: {train_meta.count()}')
+    print(f'Number of rows in test split: {test_meta.count()}')
     
+    # -------------------------------------------------------------------------
+    # MODEL TRAINING AND EVALUATION
+
     # Define transformers
     pixel_extractor = extractPixels()
     df_transformer = explode_pixel_arrays_into_df()
