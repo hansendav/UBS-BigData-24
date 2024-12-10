@@ -295,7 +295,7 @@ def main(subsample):
     # Test the pixel extractor
     meta = pixel_extractor.transform(meta)
     print('Pixel extractor applied')
-    meta.show(10))
+    meta.show(10)
 
     # # Read label dictionary
     # label_dict = spark.read.csv('s3://ubs-cde/home/e2405193/bigdata/label_encoding.csv', header=True)
