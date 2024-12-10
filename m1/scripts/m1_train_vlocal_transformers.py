@@ -1,4 +1,18 @@
-# Import libraries 
+# -----------------------------------------------------------------------------
+# ### UBS-BigData Class M2: Geodata science 
+# ### Subproject: M1 - Classical Machine Learning Algorithm on BigEarthNet 
+# -----------------------------------------------------------------------------
+
+# Author: David Hansen 
+# Date: 2024-12-11 
+# Description: Training random forest classifier on BigEarthNet dataset for 
+# semantic segmentation. Uses custom transformers within the machine learning 
+# pipeline. Based on a custom metadata dataframe that holds the paths to the 
+# respective images for each BigEarthNet patch. 
+
+# -----------------------------------------------------------------------------
+# ### Libraries import 
+# -----------------------------------------------------------------------------
 from pyspark.sql import SparkSession 
 from pyspark.sql.types import * # import all datatypes
 import pyarrow.fs as fs
@@ -25,6 +39,10 @@ from pyspark.ml.tuning import ParamGridBuilder, CrossValidator
 # -----------------------------------------------------------------------------
 
 def log_runtime(task_name):
+    """
+    Decorator to log the runtime of any given wrapped function. 
+    Prints runtimes to stdout. 
+    """
     def decorator(func):
         def wrapper(*args, **kwargs):
             start_time = time.time()
@@ -37,9 +55,9 @@ def log_runtime(task_name):
             end_time_formatted = time.strftime("%H:%M:%S", time.localtime(end_time))
             print(f"{task_name} finished at {end_time_formatted}")
             
-            runtime = end_time - start_time
-            hours, rem = divmod(runtime, 3600)
-            minutes, seconds = divmod(rem, 60)
+            runtime = end_time - start_time  # Runtime calculation in seconds 
+            hours, rem = divmod(runtime, 3600) # convert seconds to hours and remaining
+            minutes, seconds = divmod(rem, 60) # convert remaining seconds to minutes and seconds 
             runtime_formatted = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
             print(f"Runtime of task {task_name}: {runtime_formatted}")
             
@@ -47,20 +65,16 @@ def log_runtime(task_name):
         return wrapper
     return  decorator
 
-def print_start_finish(whatstarted_message):
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            print(f"{whatstarted_message} started")
-            result = func(*args, **kwargs)
-            print(f"{whatstarted_message} finished")
-            return result 
-        return wrapper 
-    return decorator
-
 # -----------------------------------------------------------------------------
 # ### Define functions
 # -----------------------------------------------------------------------------
 def prepare_cu_metadata(metadata):
+    """
+    Function to prepare the custom metadata dataframe for the BigEarthNet dataset.
+    Uses as input cols the paths to the respective S1, S2 and label directories. 
+    Returns the metadata dataframe with an additional column that holds the paths 
+    to all patch related images as an array.
+    """
     metadata = metadata \
     .withColumn('s1_path', f.split(f.col('s1_path'), 's3://').getItem(1))\
     .withColumn('s2_path', f.split(f.col('s2_path'), 's3://').getItem(1))\
@@ -178,9 +192,6 @@ class extractPixels(Transformer):
 
         return df 
 
-
-
-
 class explode_pixel_arrays_into_df(Transformer):
     def __init__(self):
         super(explode_pixel_arrays_into_df, self).__init__()
@@ -264,10 +275,43 @@ class custom_vector_assembler(Transformer):
 
     def _transform(self, df):
         feature_cols = [col for col in df.columns if col != 'label']
-        feature_assembler = VectorAssembler(inputCols=feature_cols, outputCol="features", handleInvalid='skip')
+        feature_assembler = VectorAssembler(inputCols=feature_cols, outputCol='features', handleInvalid='skip')
         return feature_assembler.transform(df).select('features', 'label')
-    
-# ------------------git st-----------------------------------------------------------
+
+# -----------------------------------------------------------------------------
+# ### Define loggings functions fitting and inference 
+# -----------------------------------------------------------------------------
+@log_runtime('Fit pipeline')
+def fit_pipeline(pipeline, train_input):
+    """
+    Fitting pipeline given training data input.
+    Wrapped in decorator to log runtime.
+    """
+    model = pipeline.fit(train_input)
+    print(f'Pipeline fitting done')
+    return model
+
+@log_runtime('Test inference')
+def test_inference(pipeline, test_input):
+    """
+    Inference on test set given a fitted pipeline.
+    Wrapped in decorator to log runtime.
+    """
+    preds_test = pipeline.transform(test_input).select('label', 'prediction')
+    print(f'Test set inference done')
+    return preds_test
+
+@log_runtime('Evaluation')
+def evaluate_pipeline(evaluator, preds):
+    """
+    Evaluation pipeline given predictions and evaluator. 
+    Wrapped in decorator to log runtime.
+    """   
+    accuracy = evaluator.evaluate(preds)
+    print(f'Evaluation done: Accuracy: {accuracy}')
+    return accuracy 
+
+# -----------------------------------------------------------------------------
 # ### Define main 
 # -----------------------------------------------------------------------------
 @log_runtime('Main')
@@ -277,8 +321,7 @@ def main(subsample):
         .getOrCreate()
 
     print(f'Spark session created')
-    print(f'Spark session created', file=sys.stderr)
-
+    
     meta_schema = StructType([
         StructField('split', StringType(), True),
         StructField('s1_path', StringType(), True),
@@ -332,18 +375,16 @@ def main(subsample):
     print('Pipeline created')
 
     # Model fitting
-    rf_model = pipeline.fit(train_meta)
+    rf_model = fit_pipeline(pipeline, train_meta)
     print('Model fitted')
 
-    # Test inference
-    preds_test = rf_model.transform(test_meta).select('label', 'prediction')
-    print('Test inference')
+    # Test inference 
+    preds_test = test_inference(rf_model, test_meta)
 
-    # Test evaluatopm
-    evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
+    # Evaluation 
+    evaluator = MulticlassClassificationEvaluator(metricName="accuracy")
+    evaluate_pipeline(evaluator, preds_test)
 
-    test_accuracy = evaluator.evaluate(preds_test)
-    print(f'Test set accuracy: {test_accuracy}')
     spark.stop()
 
 # -----------------------------------------------------------------------------
