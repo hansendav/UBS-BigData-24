@@ -2,7 +2,7 @@
 from pyspark.sql import SparkSession 
 from pyspark.sql.types import * # import all datatypes
 import pyarrow.fs as fs
-from pyspark.sql.functions import col, udf, pandas_udf, PandasUDFType, Row
+from pyspark.sql.functions import col, udf, pandas_udf, PandasUDFType 
 from pyspark.sql import functions as f
 import pandas as pd
 import rasterio 
